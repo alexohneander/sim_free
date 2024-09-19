@@ -1,13 +1,14 @@
 import os
 import logging
 import uuid
+from pathlib import Path
 from simcrunner import Simc, JsonExport, Arguments, Profile
 
 from typing import Union, Annotated
 from fastapi import FastAPI, Form
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, HTMLResponse
 from simcrunner.simc import HtmlExport
 
 # SIMC Settings
@@ -28,17 +29,26 @@ def read_root():
 @app.post("/sim/current_gear")
 async def simulate_current_gear(simcprofile: Annotated[str, Form()]):
 
-    sim_args = create_sim_arguments(simcprofile)
+    profile_path = create_sim_arguments(simcprofile)
     export_path = create_html_export()
     html_export = HtmlExport(export_path)
 
+    profile = Profile(profile_path)
+    args = Arguments(profile, iterations=1000)
+
     (runner
-        .add_args(sim_args)
+        .add_args(args)
         .add_args('target_error=0.05', threads=4)
         .add_args(html_export)
         .run())
 
-    return FileResponse(export_path)
+    with open(export_path, 'r') as file:
+        response = file.read().replace('\n', '')
+
+    os.remove(export_path)
+    os.remove(profile_path)
+
+    return HTMLResponse(response)
 
 # HELPER Functions
 def create_profile(profile_path: str, profile_data: str):
@@ -58,7 +68,4 @@ def create_sim_arguments(profile_data: str):
 
     create_profile(profile_path, profile_data)
 
-    profile = Profile(profile_path)
-    args = Arguments(profile, iterations=1000)
-
-    return args
+    return profile_path
