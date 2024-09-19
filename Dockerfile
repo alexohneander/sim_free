@@ -1,5 +1,7 @@
 FROM simulationcraftorg/simc:latest
 
+ENV LANG=de_DE.UTF-8
+
 RUN apk add --no-cache python3 py3-pip git
 
 ENV VIRTUAL_ENV=/opt/venv
