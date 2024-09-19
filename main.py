@@ -1,6 +1,9 @@
 import os
 import logging
 import uuid
+import time
+import functools
+
 from pathlib import Path
 from simcrunner import Simc, JsonExport, Arguments, Profile
 
@@ -15,7 +18,6 @@ from simcrunner.simc import HtmlExport
 logging.basicConfig(level=logging.INFO)
 # simc_path = os.path.join('tests', 'simc')
 simc_path = "./"
-runner = Simc(simc_path=simc_path)
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="templates/static"), name="static")
@@ -27,7 +29,7 @@ def read_root():
     return FileResponse(index_path)
 
 @app.post("/sim/current_gear")
-async def simulate_current_gear(simcprofile: Annotated[str, Form()]):
+def simulate_current_gear(simcprofile: Annotated[str, Form()]):
 
     profile_path = create_sim_arguments(simcprofile)
     export_path = create_html_export()
@@ -36,17 +38,15 @@ async def simulate_current_gear(simcprofile: Annotated[str, Form()]):
     profile = Profile(profile_path)
     args = Arguments(profile, iterations=1000)
 
+    runner = Simc(simc_path=simc_path)
     (runner
         .add_args(args)
         .add_args('target_error=0.05', threads=4)
         .add_args(html_export)
         .run())
 
-    with open(export_path, 'r') as file:
-        response = file.read().replace('\n', '')
-
-    os.remove(export_path)
-    os.remove(profile_path)
+    response = read_file_with_lru_cache(export_path)
+    remove_temp_files(profile_path, export_path)
 
     return HTMLResponse(response)
 
@@ -69,3 +69,17 @@ def create_sim_arguments(profile_data: str):
     create_profile(profile_path, profile_data)
 
     return profile_path
+
+def remove_temp_files(profile_path: str, export_path: str):
+    time.sleep(1)
+    os.remove(export_path)
+    os.remove(profile_path)
+
+@functools.lru_cache(maxsize=2)
+def read_file_with_lru_cache(file_path):
+    # Read the file content
+    with open(file_path, 'r') as file:
+        file_content = file.read()
+        print(f"Reading from file: {file_path}")
+
+    return file_content
