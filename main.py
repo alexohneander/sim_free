@@ -78,7 +78,7 @@ def remove_temp_files(profile_path: str, export_path: str):
 @functools.lru_cache(maxsize=2)
 def read_file_with_lru_cache(file_path):
     # Read the file content
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding="utf-8") as file:
         file_content = file.read()
         print(f"Reading from file: {file_path}")
 
