@@ -1,0 +1,7 @@
+profiles/
+results/
+__pycache__/
+.venv/
+tests/
+simc
+simcrunner_export.simc
