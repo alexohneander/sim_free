@@ -1,0 +1,5 @@
+profiles/
+results/
+__pycache__/
+.venv/
+tests/

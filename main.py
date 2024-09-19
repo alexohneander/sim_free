@@ -12,7 +12,8 @@ from simcrunner.simc import HtmlExport
 
 # SIMC Settings
 logging.basicConfig(level=logging.INFO)
-simc_path = os.path.join('tests', 'simc')
+# simc_path = os.path.join('tests', 'simc')
+simc_path = "./"
 runner = Simc(simc_path=simc_path)
 
 app = FastAPI()
