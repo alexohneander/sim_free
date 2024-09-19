@@ -45,10 +45,10 @@ def simulate_current_gear(simcprofile: Annotated[str, Form()]):
         .add_args(html_export)
         .run())
 
-    response = read_file_with_lru_cache(export_path)
-    remove_temp_files(profile_path, export_path)
+    # response = FileResponse(export_path)
+    # remove_temp_files(profile_path, export_path)
 
-    return HTMLResponse(response)
+    return FileResponse(export_path)
 
 # HELPER Functions
 def create_profile(profile_path: str, profile_data: str):
