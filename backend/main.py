@@ -20,7 +20,10 @@ logging.basicConfig(level=logging.INFO)
 # simc_path = os.path.join('tests', 'simc')
 simc_path = "./"
 
-app = FastAPI()
+app = FastAPI(
+    title = "SimC-Free Backend",
+    version="0.1.0",
+)
 
 origins = [
     "http://localhost",
