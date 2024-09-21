@@ -10,13 +10,16 @@ export function SimCurrentGear() {
 
   async function fetchSimResult(formData: FormData) {
     try {
-      const response = await fetch("http://127.0.0.1:8000/sim/current_gear", {
-        method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
+      const response = await fetch(
+        "https://sim-free.dev-null.rocks/sim/current_gear",
+        {
+          method: "POST",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: formData,
         },
-        body: formData,
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Error! status: ${response.status}`);
