@@ -26,7 +26,6 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "https://sim-free.dev-null.rocks",
-    "*"
 ]
 
 app.add_middleware(
