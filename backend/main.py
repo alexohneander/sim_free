@@ -9,7 +9,10 @@ from simcrunner import Simc, JsonExport, Arguments, Profile
 
 from typing import Union, Annotated
 from fastapi import FastAPI, Form
+
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse
@@ -28,6 +31,10 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
     "https://sim-free.dev-null.rocks",
 ]
 
@@ -38,6 +45,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+GZipMiddleware(app, 500, 9)
 
 app.mount("/_next", StaticFiles(directory="templates/_next"), name="static")
 app.mount("/img", StaticFiles(directory="templates/img"), name="static")
