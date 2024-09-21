@@ -40,7 +40,6 @@ app.add_middleware(
 )
 
 app.mount("/_next", StaticFiles(directory="templates/_next"), name="static")
-app.mount("/_next/image", StaticFiles(directory="templates/_next"), name="static")
 app.mount("/img", StaticFiles(directory="templates/img"), name="static")
 
 # ROUTES
@@ -66,9 +65,6 @@ def simulate_current_gear(simcprofile: Annotated[str, Form()]):
         .add_args(html_export)
         .run())
 
-    # response = FileResponse(export_path)
-    # remove_temp_files(profile_path, export_path)
-
     return FileResponse(export_path)
 
 # HELPER Functions
@@ -90,11 +86,6 @@ def create_sim_arguments(profile_data: str):
     create_profile(profile_path, profile_data)
 
     return profile_path
-
-def remove_temp_files(profile_path: str, export_path: str):
-    time.sleep(1)
-    os.remove(export_path)
-    os.remove(profile_path)
 
 @functools.lru_cache(maxsize=2)
 def read_file_with_lru_cache(file_path):
