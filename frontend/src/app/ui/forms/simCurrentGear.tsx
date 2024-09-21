@@ -6,6 +6,7 @@ import styles from "../../page.module.css";
 export function SimCurrentGear() {
   const [isFetched, setIsFetched] = useState(false);
   const [fetchedData, setFetchedData] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   async function fetchSimResult(formData: FormData) {
     try {
@@ -35,6 +36,12 @@ export function SimCurrentGear() {
 
   return (
     <div>
+      <div
+        className={styles.loader}
+        style={{
+          display: `${isLoading && !isFetched ? "block" : "none"}`,
+        }}
+      ></div>
       <iframe
         id="renderframe"
         style={{
@@ -53,12 +60,16 @@ export function SimCurrentGear() {
             id="simcprofile"
             name="simcprofile"
             style={{
-              display: `${isFetched ? "none" : "block"}`,
+              display: `${isLoading ? "none" : "block"}`,
             }}
           />
         </div>
         <div className={styles.ctas}>
-          <button className={styles.primary} type="submit">
+          <button
+            className={styles.primary}
+            type="submit"
+            onClick={() => setIsLoading(true)}
+          >
             Run Sim
           </button>
           <a
