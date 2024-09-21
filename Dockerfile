@@ -2,7 +2,7 @@
 # Frontend Build
 FROM node:lts AS build
 WORKDIR /app
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ .
 RUN npm run build
