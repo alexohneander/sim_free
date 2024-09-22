@@ -6,14 +6,16 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <img
-          className={styles.logo}
-          src={`/img/warcraft-icon-22.png`}
-          alt="Sim-Free Logo"
-          width={150}
-          height={150}
-          // priority
-        />
+        <a href="/" style={{ margin: "auto" }}>
+          <img
+            className={styles.logo}
+            src={`/img/warcraft-icon-22.png`}
+            alt="Sim-Free Logo"
+            width={150}
+            height={150}
+            // priority
+          />
+        </a>
         <ol>
           <li>
             Copy/paste the text from the SimulationCraft addon. {}
