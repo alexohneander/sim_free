@@ -1,0 +1,12 @@
+.gearcontainer {
+    width: 100%;
+}
+
+.gearcontainer .gearitem {
+    margin: 30px auto;
+    height: 38px;
+}
+
+.gearcontainer img {
+    float: left;
+}

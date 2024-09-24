@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import styles from "../../page.module.css";
+import { GearParser, ParseGearData, ParsedGear } from "../snippets/gear-parser";
 
 export function SimCurrentGear() {
+  const parsedGearList: ParsedGear[] = [];
   const [isFetched, setIsFetched] = useState(false);
   const [fetchedData, setFetchedData] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [parsedData, setParsedData] = useState(parsedGearList);
 
   async function fetchSimResult(formData: FormData) {
     try {
@@ -37,6 +40,10 @@ export function SimCurrentGear() {
     }
   }
 
+  async function parseGearFromText() {
+    setParsedData(ParseGearData());
+  }
+
   return (
     <div>
       <div
@@ -62,10 +69,14 @@ export function SimCurrentGear() {
             rows={10}
             id="simcprofile"
             name="simcprofile"
+            onKeyUp={() => parseGearFromText()}
             style={{
               display: `${isLoading ? "none" : "block"}`,
             }}
           />
+        </div>
+        <div className={styles.ctas}>
+          <GearParser isVisible={!isLoading} ParsedGearList={parsedData} />
         </div>
         <div className={styles.ctas}>
           <button
