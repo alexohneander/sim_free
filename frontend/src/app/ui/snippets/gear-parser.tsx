@@ -74,12 +74,12 @@ const isItemGear: (gearString: string) => boolean = function (gearString) {
   if (gearString.includes("chest=")) {
     isGearItem = true;
   }
-  if (gearString.includes("shirt=")) {
-    isGearItem = true;
-  }
-  if (gearString.includes("tabard=")) {
-    isGearItem = true;
-  }
+  // if (gearString.includes("shirt=")) {
+  //   isGearItem = true;
+  // }
+  // if (gearString.includes("tabard=")) {
+  //   isGearItem = true;
+  // }
   if (gearString.includes("wrist=")) {
     isGearItem = true;
   }
