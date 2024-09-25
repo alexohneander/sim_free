@@ -9,10 +9,6 @@ interface GearParserProps {
   ParsedGearList: ParsedGear[];
 }
 
-interface ParseGearReq {
-  ParsedGearList: ParsedGear[];
-}
-
 export interface ParsedGear {
   id: string;
   name: string;
