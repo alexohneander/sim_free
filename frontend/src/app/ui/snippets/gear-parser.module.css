@@ -1,5 +1,13 @@
 .gearcontainer {
     width: 100%;
+    height: 100%;
+    border: 1px solid;
+    padding: 15px;
+    margin-bottom: 40px;
+}
+
+.gearcontainer .geardropdown {
+    display: none;
 }
 
 .gearcontainer .gearitem {

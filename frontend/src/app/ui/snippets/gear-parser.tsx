@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import styles from "./gear-parser.module.css";
+import { useState } from "react";
 
 interface GearParserProps {
   isVisible: boolean;
@@ -124,44 +125,54 @@ const getValueFromTextArea: () => string = function () {
   return textFromTextBox;
 };
 
-function ParsedGearComponent(props: ParseGearReq) {
-  return (
-    <div>
-      {props.ParsedGearList.map((gear: ParsedGear, index: number) => {
-        return (
-          <div
-            className={styles.gearitem}
-            key={index}
-            style={{
-              border: `${gear.active ? "1px solid green" : "1px solid blue"}`,
-            }}
-          >
-            <a href={gear.link} target="_blank">
-              <Image
-                aria-hidden
-                src={gear.image}
-                alt={gear.name}
-                width={35}
-                height={35}
-              />
-              <p>{gear.name}</p>
-            </a>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function GearParser(props: GearParserProps) {
+  const [showGearList, setShowGearList] = useState(false);
+
+  function toggleSetShowGearList(showGearList: boolean) {
+    if (showGearList === true) {
+      setShowGearList(false);
+    } else {
+      setShowGearList(true);
+    }
+  }
+
   return (
     <div
       className={styles.gearcontainer}
       style={{
         display: `${props.isVisible ? "block" : "none"}`,
       }}
+      onClick={() => toggleSetShowGearList(showGearList)}
     >
-      <ParsedGearComponent ParsedGearList={props.ParsedGearList} />
+      <div
+        className={styles.geardropdown}
+        style={{
+          display: `${showGearList ? "block" : "none"}`,
+        }}
+      >
+        {props.ParsedGearList.map((gear: ParsedGear, index: number) => {
+          return (
+            <div
+              className={styles.gearitem}
+              key={index}
+              style={{
+                border: `${gear.active ? "1px solid green" : "1px solid blue"}`,
+              }}
+            >
+              <a href={gear.link} target="_blank">
+                <Image
+                  aria-hidden
+                  src={gear.image}
+                  alt={gear.name}
+                  width={35}
+                  height={35}
+                />
+                <p>{gear.name}</p>
+              </a>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
