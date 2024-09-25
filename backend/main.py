@@ -13,6 +13,13 @@ from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
+from fastapi.responses import PlainTextResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
+
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse
@@ -50,6 +57,13 @@ app.mount("/img", StaticFiles(directory="templates/img"), name="static")
 @app.get("/")
 def read_root():
     index_path = os.path.join('templates', 'index.html')
+    return FileResponse(index_path)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request, exc):
+    print(f"OMG! An HTTP error!: {repr(exc)}")
+    index_path = os.path.join('templates', '404.html')
     return FileResponse(index_path)
 
 @app.post("/sim/current_gear")
