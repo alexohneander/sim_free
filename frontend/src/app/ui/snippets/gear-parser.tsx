@@ -3,6 +3,7 @@
 import Image from "next/image";
 import styles from "./gear-parser.module.css";
 import { useState } from "react";
+import DOMPurify from "dompurify";
 
 interface GearParserProps {
   isVisible: boolean;
@@ -155,7 +156,7 @@ export function GearParser(props: GearParserProps) {
                 border: `${gear.active ? "1px solid green" : "1px solid blue"}`,
               }}
             >
-              <a href={gear.link} target="_blank">
+              <a href={DOMPurify.sanitize(gear.link)} target="_blank">
                 <Image
                   aria-hidden
                   src={gear.image}
