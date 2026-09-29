@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./navigation.module.css";
 
 export function Navigation() {
@@ -6,7 +7,7 @@ export function Navigation() {
     <nav className={styles.nav}>
       <div className={styles.navcontainer}>
         <div className={styles.logocontainer}>
-          <a className={styles.logo} href="/">
+          <Link className={styles.logo} href="/">
             <Image
               className={styles.logo}
               src="/img/warcraft-icon-22.png"
@@ -15,11 +16,11 @@ export function Navigation() {
               height={60}
               priority
             />
-          </a>
+          </Link>
         </div>
 
         <div className={styles.navlinkcontainer}>
-          <a href="/">Home</a> |<a href="/about">About</a>
+          <Link href="/">Home</Link> |<Link href="/about">About</Link>
         </div>
       </div>
     </nav>

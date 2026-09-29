@@ -1,2 +1,2 @@
-fastapi[standard]==0.115.0
+fastapi[standard]==0.142.0
 git+https://github.com/simcminmax/simcrunner.git

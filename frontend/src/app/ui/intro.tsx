@@ -1,11 +1,12 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../page.module.css";
 import { SimCurrentGear } from "./forms/simCurrentGear";
 
 export function Intro() {
   return (
     <main className={styles.main}>
-      <a href="/" style={{ margin: "auto" }}>
+      <Link href="/" style={{ margin: "auto" }}>
         <Image
           className={styles.logo}
           src="/img/warcraft-icon-22.png"
@@ -14,7 +15,7 @@ export function Intro() {
           height={150}
           priority
         />
-      </a>
+      </Link>
       <ol>
         <li>
           Copy/paste the text from the SimulationCraft addon. {}
