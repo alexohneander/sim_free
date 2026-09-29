@@ -1,101 +1,240 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import styles from "../../page.module.css";
-import { GearParser, ParseGearData, ParsedGear } from "../snippets/gear-parser";
 
-export function SimCurrentGear() {
-  const parsedGearList: ParsedGear[] = [];
-  const [isFetched, setIsFetched] = useState(false);
-  const [fetchedData, setFetchedData] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [parsedData, setParsedData] = useState(parsedGearList);
+const GEAR_SLOTS = new Set([
+  "head", "neck", "shoulder", "back", "chest", "wrist", "hands",
+  "waist", "legs", "feet", "finger1", "finger2", "trinket1",
+  "trinket2", "main_hand", "off_hand",
+]);
+const MAX_ITEMS_PER_COMPARISON = 20;
 
-  async function fetchSimResult(formData: FormData) {
-    try {
-      const response = await fetch(
-        "https://sim-free.dev-null.rocks/sim/current_gear",
-        {
-          method: "POST",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-          },
-          body: formData,
-        },
-      );
+interface ItemCandidate {
+  slot: string;
+  line: string;
+  itemId: string;
+  name: string;
+}
 
-      if (!response.ok) {
-        throw new Error(`Error! status: ${response.status}`);
-      } else {
-        setIsFetched(true);
-        setFetchedData(await response.text());
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        // ✅ TypeScript knows err is Error
-        console.log(err.message);
-      } else {
-        console.log("Unexpected error", err);
-      }
+function parseBagItems(profile: string): ItemCandidate[] {
+  const items: ItemCandidate[] = [];
+  let inBagSection = false;
+  let itemName = "";
+
+  for (const rawLine of profile.split(/\r\n|\r|\n/)) {
+    const line = rawLine.trim();
+    if (line.startsWith("###")) {
+      inBagSection = /^###\s*Gear from Bags\s*$/i.test(line);
+      itemName = "";
+      continue;
+    }
+    if (!inBagSection) {
+      continue;
+    }
+    if (line === "#") {
+      itemName = "";
+      continue;
+    }
+
+    const commentedLine = line.match(/^#\s*(.*)$/);
+    if (!commentedLine) {
+      itemName = "";
+      continue;
+    }
+
+    const content = commentedLine[1].trim();
+    const gearMatch = content.match(/^([a-z0-9_]+)=.*(?:^|,)id=(\d+)(?:,|$)/);
+    if (gearMatch && GEAR_SLOTS.has(gearMatch[1])) {
+      items.push({
+        slot: gearMatch[1],
+        line: content,
+        itemId: gearMatch[2],
+        name: itemName || `Item ${gearMatch[2]}`,
+      });
+      itemName = "";
+    } else {
+      itemName = content;
     }
   }
 
-  async function parseGearFromText() {
-    setParsedData(ParseGearData());
+  return items;
+}
+
+function applySelectedItems(profile: string, items: ItemCandidate[]): string {
+  const lines = profile.split(/\r\n|\r|\n/);
+
+  for (const item of items) {
+    const slotLine = new RegExp(`^\\s*${item.slot}=`);
+    const slotIndex = lines.findIndex((line) => slotLine.test(line));
+    if (slotIndex >= 0) {
+      lines[slotIndex] = item.line;
+    } else {
+      lines.push(item.line);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+export function SimCurrentGear() {
+  const [isFetched, setIsFetched] = useState(false);
+  const [fetchedData, setFetchedData] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [simcProfile, setSimcProfile] = useState("");
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const candidates = parseBagItems(simcProfile);
+  const selectedCandidates = candidates.filter((_, index) => selectedItems.has(index));
+  const selectedSlots = new Set(selectedCandidates.map((item) => item.slot));
+
+  async function runCurrentGear() {
+    setIsLoading(true);
+    setErrorMessage("");
+    setIsFetched(false);
+
+    try {
+      const formData = new FormData();
+      formData.set(
+        "simcprofile",
+        applySelectedItems(simcProfile, selectedCandidates),
+      );
+      const response = await fetch("/sim/current_gear", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Simulation fehlgeschlagen (HTTP ${response.status}).`);
+      }
+      setFetchedData(await response.text());
+      setIsFetched(true);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unbekannter Fehler.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <div>
       <div
         className={styles.loader}
-        style={{
-          display: `${isLoading && !isFetched ? "block" : "none"}`,
-        }}
-      ></div>
-      <iframe
-        id="renderframe"
-        style={{
-          display: `${isFetched ? "block" : "none"}`,
-          width: "100%",
-          height: "100vh",
-          marginBottom: "50px",
-        }}
-        srcDoc={`${fetchedData}`}
+        style={{ display: isLoading ? "block" : "none" }}
       />
-      <form action={fetchSimResult}>
-        <div className={styles.ctas}>
-          <textarea
-            className={styles.textarea}
-            rows={10}
-            id="simcprofile"
-            name="simcprofile"
-            onKeyUp={() => parseGearFromText()}
-            style={{
-              display: `${isLoading ? "none" : "block"}`,
-            }}
-          />
-        </div>
-        <div className={styles.ctas}>
-          <GearParser isVisible={!isLoading} ParsedGearList={parsedData} />
-        </div>
+      {isFetched && (
+        <iframe
+          title="SimulationCraft Ergebnis"
+          style={{ width: "100%", height: "100vh", marginBottom: "50px" }}
+          srcDoc={fetchedData}
+        />
+      )}
+      <div className={styles.ctas}>
+        <textarea
+          className={styles.textarea}
+          rows={10}
+          id="simcprofile"
+          name="simcprofile"
+          value={simcProfile}
+          onChange={(event) => {
+            setSimcProfile(event.target.value);
+            setSelectedItems(new Set());
+            setIsFetched(false);
+          }}
+          placeholder="SimulationCraft-Addon-Profil hier einfügen"
+          disabled={isLoading}
+        />
+      </div>
+      <section className={styles.itemCompare}>
+        <h2>Items aus den Taschen auswählen</h2>
+        <p>
+          Ausgewählte Items ersetzen den aktuell ausgerüsteten Gegenstand im SimC-
+          Profil. Pro Slot kann nur ein Item ausgewählt werden. Der SimC-HTML-Report
+          enthält anschließend die Simulation mit dieser Gear-Auswahl.
+        </p>
+        {candidates.length === 0 ? (
+          <p role="status">
+            {simcProfile.trim()
+              ? "Im Profil wurden keine Taschen-Items gefunden."
+              : "Füge zuerst dein vollständiges SimulationCraft-Addon-Profil ein."}
+          </p>
+        ) : (
+          <>
+            <p>
+              Ausgewählt: {selectedItems.size} / {candidates.length} (maximal{" "}
+              {MAX_ITEMS_PER_COMPARISON} pro Simulation)
+            </p>
+            {candidates.map((candidate, index) => (
+              <label
+                className={styles.itemOption}
+                key={`${candidate.slot}-${candidate.itemId}-${index}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedItems.has(index)}
+                  onChange={(event) => {
+                    setSelectedItems((previous) => {
+                      const next = new Set(previous);
+                      if (event.target.checked) {
+                        next.add(index);
+                      } else {
+                        next.delete(index);
+                      }
+                      return next;
+                    });
+                  }}
+                  disabled={
+                    isLoading ||
+                    (!selectedItems.has(index) &&
+                      (selectedItems.size >= MAX_ITEMS_PER_COMPARISON ||
+                        selectedSlots.has(candidate.slot)))
+                  }
+                />
+                <Image
+                  className={styles.itemIcon}
+                  src={`https://www.raidbots.com/icon/36/id/item/${candidate.itemId}.png`}
+                  alt=""
+                  aria-hidden
+                  width={36}
+                  height={36}
+                  unoptimized
+                  onError={(event) => {
+                    event.currentTarget.style.visibility = "hidden";
+                  }}
+                />
+                <span>
+                  <strong>{candidate.name}</strong>
+                  <br />
+                  {candidate.slot} · Item {candidate.itemId}
+                </span>
+              </label>
+            ))}
+          </>
+        )}
+        {errorMessage && <p className={styles.errorMessage} role="alert">{errorMessage}</p>}
         <div className={styles.ctas}>
           <button
-            className={styles.primary}
-            type="submit"
-            onClick={() => setIsLoading(true)}
+            className={styles.secondary}
+            type="button"
+            onClick={runCurrentGear}
+            disabled={isLoading}
           >
-            Run Sim
+            {selectedCandidates.length > 0
+              ? "Aktuelles Gear mit Auswahl simulieren"
+              : "Nur aktuelles Gear simulieren"}
           </button>
           <a
             href="/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.secondary}
+            className={styles.docsLink}
           >
             Read our docs
           </a>
         </div>
-      </form>
+      </section>
     </div>
   );
 }

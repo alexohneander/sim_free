@@ -4,10 +4,9 @@ import uuid
 import time
 import functools
 
-from pathlib import Path
-from simcrunner import Simc, JsonExport, Arguments, Profile
+from simcrunner import Simc, Arguments, Profile
 
-from typing import Union, Annotated
+from typing import Annotated
 from fastapi import FastAPI, Form
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +20,6 @@ from fastapi.exception_handlers import (
 )
 
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 from starlette.responses import FileResponse, HTMLResponse
 from simcrunner.simc import HtmlExport
 
@@ -62,7 +60,9 @@ def read_root():
 
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request, exc):
-    print(f"OMG! An HTTP error!: {repr(exc)}")
+    logging.warning("HTTP error on %s: %r", request.url.path, exc)
+    if request.url.path.startswith("/sim/") or exc.status_code != 404:
+        return await http_exception_handler(request, exc)
     index_path = os.path.join('templates', '404.html')
     return FileResponse(index_path)
 
@@ -84,9 +84,9 @@ def simulate_current_gear(simcprofile: Annotated[str, Form()]):
         .run())
 
     return FileResponse(export_path)
-
 # HELPER Functions
 def create_profile(profile_path: str, profile_data: str):
+    os.makedirs(os.path.dirname(profile_path) or ".", exist_ok=True)
     with open(profile_path, 'w') as file:
         # Write content to the file
         file.write(profile_data)
@@ -104,6 +104,7 @@ def create_sim_arguments(profile_data: str):
     create_profile(profile_path, profile_data)
 
     return profile_path
+
 
 @functools.lru_cache(maxsize=2)
 def read_file_with_lru_cache(file_path):

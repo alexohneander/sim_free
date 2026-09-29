@@ -26,7 +26,10 @@ export function Intro() {
             How to install and use the SimC addon
           </a>
         </li>
-        <li>Select pieces of gear and Sim-Free will sim them</li>
+        <li>
+          Füge weitere SimC-Itemzeilen aus deinem Inventar hinzu, wähle Items
+          aus und vergleiche sie mit deinem aktuellen Gear.
+        </li>
       </ol>
       <SimCurrentGear />
     </main>
