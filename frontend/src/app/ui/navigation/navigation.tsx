@@ -20,7 +20,8 @@ export function Navigation() {
         </div>
 
         <div className={styles.navlinkcontainer}>
-          <Link href="/">Home</Link> |<Link href="/about">About</Link>
+          <Link href="/">Home</Link>
+          <Link href="/docs">Docs</Link>
         </div>
       </div>
     </nav>

@@ -28,8 +28,8 @@ export function Intro() {
           </a>
         </li>
         <li>
-          Füge weitere SimC-Itemzeilen aus deinem Inventar hinzu, wähle Items
-          aus und vergleiche sie mit deinem aktuellen Gear.
+          Select items from <code>Gear from Bags</code> to compare Top Gear
+          combinations against your current gear.
         </li>
       </ol>
       <SimCurrentGear />

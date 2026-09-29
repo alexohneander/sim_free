@@ -16,7 +16,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "SimC-Free - Optimize Your WoW Characters",
-  description: "Optimize Your WoW Characters",
+  description:
+    "Self-hosted World of Warcraft gear simulations powered by SimulationCraft.",
 };
 
 export default function RootLayout({

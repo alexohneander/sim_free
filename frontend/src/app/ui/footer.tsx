@@ -1,51 +1,40 @@
-import Image from "next/image";
+import Link from "next/link";
 import styles from "../page.module.css";
 
 export function Footer() {
   return (
     <footer className={styles.footer}>
-      <a
-        href="https://github.com/alexohneander/sim_free/issues/new"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Image
-          aria-hidden
-          src="https://nextjs.org/icons/file.svg"
-          alt="File icon"
-          width={16}
-          height={16}
-        />
-        Issues
-      </a>
-      <a
-        href="https://github.com/alexohneander/sim_free/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Image
-          aria-hidden
-          src="https://nextjs.org/icons/window.svg"
-          alt="Window icon"
-          width={16}
-          height={16}
-        />
-        Project
-      </a>
-      <a
-        href="https://alexohneander.de"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Image
-          aria-hidden
-          src="https://nextjs.org/icons/globe.svg"
-          alt="Globe icon"
-          width={16}
-          height={16}
-        />
-        Go to alexohneander.de →
-      </a>
+      <div className={styles.footerBrand}>
+        <span className={styles.footerMark} aria-hidden="true">
+          S
+        </span>
+        <div>
+          <strong>SimC-Free</strong>
+          <p>Open-source WoW gear simulation, self-hosted.</p>
+        </div>
+      </div>
+      <nav className={styles.footerLinks} aria-label="Footer">
+        <Link href="/docs">Documentation</Link>
+        <a
+          href="https://github.com/alexohneander/sim_free"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a
+          href="https://github.com/alexohneander/sim_free/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Report an issue
+          <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
+      <p className={styles.footerCopyright}>
+        Powered by SimulationCraft
+      </p>
     </footer>
   );
 }

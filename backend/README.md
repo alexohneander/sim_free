@@ -18,10 +18,15 @@ cd sim_free
 
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
-### Run
+The backend requires a SimulationCraft executable available in its working
+directory. For the complete self-hosted setup, use the root Dockerfile, which
+packages the frontend and SimulationCraft together.
+
+### Run the backend
 ```bash
+cd backend
 fastapi run main.py
 ```

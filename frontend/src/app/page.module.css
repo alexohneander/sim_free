@@ -37,6 +37,44 @@
     max-width: 1300px;
 }
 
+.docsContent {
+    align-self: start;
+    padding-top: 48px;
+}
+
+.docsContent h1,
+.docsContent h2 {
+    width: 100%;
+}
+
+.docsContent p,
+.docsContent ol,
+.docsContent pre {
+    width: 100%;
+    line-height: 1.7;
+}
+
+.docsContent ol {
+    padding-left: 24px;
+}
+
+.docsContent li + li {
+    margin-top: 8px;
+}
+
+.docsContent a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.docsContent pre {
+    overflow-x: auto;
+    padding: 16px;
+    border: 1px solid var(--gray-alpha-200);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
 .main ol {
     font-family: var(--font-geist-mono);
     padding-left: 0;
@@ -159,17 +197,70 @@ a.secondary {
 .footer {
     grid-row-start: 3;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 24px;
+    width: 100%;
+    padding: 22px 24px;
+    border: 1px solid var(--gray-alpha-200);
+    border-radius: 18px;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.07),
+        rgba(255, 255, 255, 0.025)
+    );
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 13px;
 }
 
-.footer a {
+.footerBrand {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 
-.footer img {
-    flex-shrink: 0;
+.footerMark {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-family: var(--font-geist-mono);
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.footerBrand strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.footerBrand p,
+.footerCopyright {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.footerLinks {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px;
+}
+
+.footerLinks a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s ease;
+}
+
+.footerLinks a:hover {
+    color: #fff;
 }
 
 /* Enable hover only on non-touch devices */
@@ -184,10 +275,6 @@ a.secondary {
         border-color: transparent;
     }
 
-    .footer a:hover {
-        text-decoration: underline;
-        text-underline-offset: 4px;
-    }
 }
 
 @media (max-width: 600px) {
@@ -198,6 +285,7 @@ a.secondary {
 
     .main {
         align-items: center;
+        min-width: 0;
     }
 
     .main ol {
@@ -219,9 +307,15 @@ a.secondary {
     }
 
     .footer {
+        flex-direction: column;
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
+        text-align: center;
+    }
+
+    .footerLinks {
+        gap: 16px;
     }
 }
 

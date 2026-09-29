@@ -68,7 +68,7 @@ function getActorName(profile: string): string {
     /^(?:player|death_knight|demon_hunter|druid|evoker|hunter|mage|monk|paladin|priest|rogue|shaman|warlock|warrior)=["']?([^"'\r\n]+)["']?\s*$/m,
   );
   if (!actorLine) {
-    throw new Error("Der Charaktername konnte im SimC-Profil nicht erkannt werden.");
+    throw new Error("Could not find the character name in the SimC profile.");
   }
   return actorLine[1].trim();
 }
@@ -88,13 +88,24 @@ function getTopGearCombinationCount(items: ItemCandidate[]): number {
   );
 }
 
-function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
+function groupItemsBySlot(items: ItemCandidate[]): Map<string, ItemCandidate[]> {
   const groupedItems = new Map<string, ItemCandidate[]>();
   items.forEach((item) => {
     const slotItems = groupedItems.get(item.slot) ?? [];
     slotItems.push(item);
     groupedItems.set(item.slot, slotItems);
   });
+  return groupedItems;
+}
+
+function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
+  const groupedItems = groupItemsBySlot(items);
+  const combinationCount = getTopGearCombinationCount(items);
+  if (combinationCount > MAX_TOP_GEAR_COMBINATIONS) {
+    throw new Error(
+      `This selection creates ${combinationCount} combinations. Reduce it to ${MAX_TOP_GEAR_COMBINATIONS} or fewer.`,
+    );
+  }
 
   const slots = [...groupedItems.keys()];
   const combinations: ItemCandidate[][] = [];
@@ -106,15 +117,13 @@ function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
     }
 
     const options = groupedItems.get(slots[slotIndex]);
-    options?.forEach((item) => buildCombinations(slotIndex + 1, [...current, item]));
+    if (!options) {
+      throw new Error(`No items were found for the ${slots[slotIndex]} slot.`);
+    }
+    options.forEach((item) => buildCombinations(slotIndex + 1, [...current, item]));
   }
 
   buildCombinations(0, []);
-  if (combinations.length > MAX_TOP_GEAR_COMBINATIONS) {
-    throw new Error(
-      `Diese Auswahl erzeugt ${combinations.length} Kombinationen. Bitte reduziere sie auf höchstens ${MAX_TOP_GEAR_COMBINATIONS}.`,
-    );
-  }
 
   const actorName = getActorName(profile);
   const copies = combinations.flatMap((combination, index) => [
@@ -141,7 +150,9 @@ export function SimCurrentGear() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const candidates = parseBagItems(simcProfile);
-  const selectedCandidates = candidates.filter((_, index) => selectedItems.has(index));
+  const selectedCandidates = candidates.filter((_, index) =>
+    selectedItems.has(index),
+  );
   const topGearCombinationCount = getTopGearCombinationCount(selectedCandidates);
 
   async function runCurrentGear() {
@@ -161,11 +172,13 @@ export function SimCurrentGear() {
       });
 
       if (!response.ok) {
-        throw new Error(`Simulation fehlgeschlagen (HTTP ${response.status}).`);
+        throw new Error(`Simulation failed (HTTP ${response.status}).`);
       }
       setSimulationReport(await response.text());
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unbekannter Fehler.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "An unexpected error occurred.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -196,29 +209,29 @@ export function SimCurrentGear() {
             setSelectedItems(new Set());
             setSimulationReport("");
           }}
-          placeholder="SimulationCraft-Addon-Profil hier einfügen"
+          placeholder="Paste your SimulationCraft addon profile here"
           disabled={isLoading}
         />
       </div>
       <section className={styles.itemCompare}>
-        <h2>Items aus den Taschen auswählen</h2>
+        <h2>Select items from your bags</h2>
         <p>
-          Wähle bis zu 20 Items, auch mehrere pro Slot: SimC erhält dann alle
-          möglichen Gear-Kombinationen als Top-Gear-Profile. Der Originalcharakter
-          dient als Vergleich im selben HTML-Report. Maximal{" "}
-          {MAX_TOP_GEAR_COMBINATIONS} Kombinationen pro Lauf.
+          Choose up to {MAX_SELECTED_ITEMS} items. Items in the same slot are
+          treated as alternatives, and your current gear is included as the
+          baseline in the HTML report. Each run supports up to{" "}
+          {MAX_TOP_GEAR_COMBINATIONS} combinations.
         </p>
         {candidates.length === 0 ? (
           <p role="status">
             {simcProfile.trim()
-              ? "Im Profil wurden keine Taschen-Items gefunden."
-              : "Füge zuerst dein vollständiges SimulationCraft-Addon-Profil ein."}
+              ? "No bag items were found in this profile."
+              : "Paste your complete SimulationCraft addon profile to get started."}
           </p>
         ) : (
           <>
             <p>
-              Ausgewählt: {selectedItems.size} / {candidates.length} Items ·{" "}
-              {topGearCombinationCount} Kombination(en)
+              Selected: {selectedItems.size} / {candidates.length} items ·{" "}
+              {topGearCombinationCount} combination(s)
             </p>
             {candidates.map((candidate, index) => (
               <label
@@ -269,22 +282,29 @@ export function SimCurrentGear() {
         )}
         {topGearCombinationCount > MAX_TOP_GEAR_COMBINATIONS && (
           <p className={styles.errorMessage} role="alert">
-            Die Auswahl erzeugt {topGearCombinationCount} Kombinationen. Maximal{" "}
-            {MAX_TOP_GEAR_COMBINATIONS} sind erlaubt; entferne einige Items oder
-            Optionen aus Slots.
+            This selection creates {topGearCombinationCount} combinations. The
+            limit is {MAX_TOP_GEAR_COMBINATIONS}; remove some items or slot
+            options.
           </p>
         )}
-        {errorMessage && <p className={styles.errorMessage} role="alert">{errorMessage}</p>}
+        {errorMessage && (
+          <p className={styles.errorMessage} role="alert">
+            {errorMessage}
+          </p>
+        )}
         <div className={styles.ctas}>
           <button
             className={styles.secondary}
             type="button"
             onClick={runCurrentGear}
-            disabled={isLoading || topGearCombinationCount > MAX_TOP_GEAR_COMBINATIONS}
+            disabled={
+              isLoading ||
+              topGearCombinationCount > MAX_TOP_GEAR_COMBINATIONS
+            }
           >
             {selectedCandidates.length > 0
-              ? "Top Gear simulieren"
-              : "Nur aktuelles Gear simulieren"}
+              ? "Run Top Gear simulation"
+              : "Simulate current gear"}
           </button>
           <a
             href="/docs"
