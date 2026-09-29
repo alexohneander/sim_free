@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sim-free
+description: Self-hosted World of Warcraft gear simulator powered by SimulationCraft
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,19 @@
+SimC-Free is deployed in namespace {{ .Release.Namespace }}.
+
+{{- if .Values.ingress.enabled }}
+Ingress:
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.gateway.enabled }}
+An HTTPRoute has been created and attached to the configured Gateway.
+Make sure the Gateway API CRDs and a Gateway controller are installed, and
+that the selected Gateway listener allows routes from namespace
+{{ .Release.Namespace }}.
+{{- end }}
+
+For local access, run:
+  kubectl port-forward service/{{ include "sim-free.fullname" . }} 8000:{{ .Values.service.port }}
+Then open http://localhost:8000.
