@@ -50,5 +50,7 @@ The frontend is a Next.js static export; the FastAPI backend serves that export
 and runs SimulationCraft. The Dockerfile builds the frontend and packages it
 with the SimC backend. GitHub Actions publishes images to
 `ghcr.io/alexohneander/sim-free` on pushes to `main`; pull requests only build
-the image without publishing it. See [backend/README.md](./backend/README.md) and
+the image without publishing it. Make the GHCR package public if the automatic
+server deployment or Kubernetes cluster should pull it without registry
+credentials. See [backend/README.md](./backend/README.md) and
 [frontend/README.md](./frontend/README.md) for component-specific details.
