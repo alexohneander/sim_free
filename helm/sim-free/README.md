@@ -11,8 +11,10 @@ helm upgrade --install sim-free ./helm/sim-free \
   --namespace sim-free --create-namespace
 ```
 
-The default image is `alexohneander/sim-free:latest`. Override it for a
-different registry or a pinned release:
+The default image is `ghcr.io/alexohneander/sim-free:latest`, published by the
+GitHub Actions workflow. Make the GHCR package public for unauthenticated
+cluster pulls, or configure `imagePullSecrets` for a private package. Override
+the image for a different registry or a pinned release:
 
 ```bash
 helm upgrade --install sim-free ./helm/sim-free \
@@ -58,7 +60,7 @@ service remains internal (`ClusterIP`) in every mode.
 | Value | Default | Description |
 | --- | --- | --- |
 | `replicaCount` | `1` | Number of application pods |
-| `image.repository` | `alexohneander/sim-free` | Container image |
+| `image.repository` | `ghcr.io/alexohneander/sim-free` | Container image |
 | `image.tag` | `latest` | Container image tag |
 | `service.port` | `8000` | Application and service port |
 | `ingress.enabled` | `false` | Create a `networking.k8s.io/v1` Ingress |
