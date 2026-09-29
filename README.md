@@ -4,10 +4,9 @@
 SimC-Free is an open-source, customizable raid bot designed to simulate and analyze player performance in massively multiplayer online role-playing games (MMORPGs). Unlike proprietary raid bots, SimC-Free offers complete transparency, allowing users to modify and extend its functionality to suit their specific needs.
 
 Paste the full SimulationCraft addon profile into the frontend. Items listed
-under `### Gear from Bags` are detected automatically. Select up to 20 items
-(one per slot) to run two SimulationCraft reports: the current gear and the
-selected items equipped alongside unchanged gear in all other slots. The HTML
-reports are shown side by side.
+under `### Gear from Bags` are detected automatically. Select up to 20 items,
+including multiple alternatives per slot, to simulate their Top Gear
+combinations alongside your current gear in one HTML report.
 
 ### How to Use:
 

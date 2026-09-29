@@ -9,18 +9,14 @@ const GEAR_SLOTS = new Set([
   "waist", "legs", "feet", "finger1", "finger2", "trinket1",
   "trinket2", "main_hand", "off_hand",
 ]);
-const MAX_ITEMS_PER_COMPARISON = 20;
+const MAX_SELECTED_ITEMS = 20;
+const MAX_TOP_GEAR_COMBINATIONS = 100;
 
 interface ItemCandidate {
   slot: string;
   line: string;
   itemId: string;
   name: string;
-}
-
-interface SimulationReport {
-  title: string;
-  html: string;
 }
 
 function parseBagItems(profile: string): ItemCandidate[] {
@@ -67,24 +63,78 @@ function parseBagItems(profile: string): ItemCandidate[] {
   return items;
 }
 
-function applySelectedItems(profile: string, items: ItemCandidate[]): string {
-  const lines = profile.split(/\r\n|\r|\n/);
+function getActorName(profile: string): string {
+  const actorLine = profile.match(
+    /^(?:player|death_knight|demon_hunter|druid|evoker|hunter|mage|monk|paladin|priest|rogue|shaman|warlock|warrior)=["']?([^"'\r\n]+)["']?\s*$/m,
+  );
+  if (!actorLine) {
+    throw new Error("Der Charaktername konnte im SimC-Profil nicht erkannt werden.");
+  }
+  return actorLine[1].trim();
+}
 
-  for (const item of items) {
-    const slotLine = new RegExp(`^\\s*${item.slot}=`);
-    const slotIndex = lines.findIndex((line) => slotLine.test(line));
-    if (slotIndex >= 0) {
-      lines[slotIndex] = item.line;
-    } else {
-      lines.push(item.line);
-    }
+function getTopGearCombinationCount(items: ItemCandidate[]): number {
+  if (items.length === 0) {
+    return 0;
   }
 
-  return lines.join("\n");
+  const slotOptions = new Map<string, number>();
+  items.forEach(({ slot }) => {
+    slotOptions.set(slot, (slotOptions.get(slot) ?? 0) + 1);
+  });
+  return [...slotOptions.values()].reduce(
+    (count, optionCount) => count * optionCount,
+    1,
+  );
+}
+
+function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
+  const groupedItems = new Map<string, ItemCandidate[]>();
+  items.forEach((item) => {
+    const slotItems = groupedItems.get(item.slot) ?? [];
+    slotItems.push(item);
+    groupedItems.set(item.slot, slotItems);
+  });
+
+  const slots = [...groupedItems.keys()];
+  const combinations: ItemCandidate[][] = [];
+
+  function buildCombinations(slotIndex: number, current: ItemCandidate[]) {
+    if (slotIndex === slots.length) {
+      combinations.push(current);
+      return;
+    }
+
+    const options = groupedItems.get(slots[slotIndex]);
+    options?.forEach((item) => buildCombinations(slotIndex + 1, [...current, item]));
+  }
+
+  buildCombinations(0, []);
+  if (combinations.length > MAX_TOP_GEAR_COMBINATIONS) {
+    throw new Error(
+      `Diese Auswahl erzeugt ${combinations.length} Kombinationen. Bitte reduziere sie auf höchstens ${MAX_TOP_GEAR_COMBINATIONS}.`,
+    );
+  }
+
+  const actorName = getActorName(profile);
+  const copies = combinations.flatMap((combination, index) => [
+    "",
+    `copy="Top Gear ${index + 1},${actorName}"`,
+    `### Top Gear ${index + 1}`,
+    ...combination.flatMap((item) => [`# ${item.name}`, item.line]),
+  ]);
+
+  return [
+    profile.trimEnd(),
+    ...copies,
+    "",
+    "single_actor_batch=1",
+    "",
+  ].join("\n");
 }
 
 export function SimCurrentGear() {
-  const [simulationReports, setSimulationReports] = useState<SimulationReport[]>([]);
+  const [simulationReport, setSimulationReport] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [simcProfile, setSimcProfile] = useState("");
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
@@ -92,41 +142,28 @@ export function SimCurrentGear() {
 
   const candidates = parseBagItems(simcProfile);
   const selectedCandidates = candidates.filter((_, index) => selectedItems.has(index));
-  const selectedSlots = new Set(selectedCandidates.map((item) => item.slot));
+  const topGearCombinationCount = getTopGearCombinationCount(selectedCandidates);
 
   async function runCurrentGear() {
     setIsLoading(true);
     setErrorMessage("");
-    setSimulationReports([]);
+    setSimulationReport("");
 
     try {
-      const profiles = selectedCandidates.length > 0
-        ? [
-            { title: "Aktuelles Gear", profile: simcProfile },
-            {
-              title: "Ausgewählte Items",
-              profile: applySelectedItems(simcProfile, selectedCandidates),
-            },
-          ]
-        : [{ title: "Aktuelles Gear", profile: simcProfile }];
-      const reports: SimulationReport[] = [];
+      const profile = selectedCandidates.length > 0
+        ? createTopGearProfile(simcProfile, selectedCandidates)
+        : simcProfile;
+      const formData = new FormData();
+      formData.set("simcprofile", profile);
+      const response = await fetch("/sim/current_gear", {
+        method: "POST",
+        body: formData,
+      });
 
-      for (const sim of profiles) {
-        const formData = new FormData();
-        formData.set("simcprofile", sim.profile);
-        const response = await fetch("/sim/current_gear", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `${sim.title}: Simulation fehlgeschlagen (HTTP ${response.status}).`,
-          );
-        }
-        reports.push({ title: sim.title, html: await response.text() });
+      if (!response.ok) {
+        throw new Error(`Simulation fehlgeschlagen (HTTP ${response.status}).`);
       }
-      setSimulationReports(reports);
+      setSimulationReport(await response.text());
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unbekannter Fehler.");
     } finally {
@@ -140,23 +177,12 @@ export function SimCurrentGear() {
         className={styles.loader}
         style={{ display: isLoading ? "block" : "none" }}
       />
-      {simulationReports.length > 0 && (
-        <section
-          className={`${styles.simulationReports} ${
-            simulationReports.length === 1 ? styles.singleSimulationReport : ""
-          }`}
-          aria-label="Simulationsergebnisse"
-        >
-          {simulationReports.map((report) => (
-            <div className={styles.simulationReport} key={report.title}>
-              <h2>{report.title}</h2>
-              <iframe
-                title={`SimulationCraft: ${report.title}`}
-                srcDoc={report.html}
-              />
-            </div>
-          ))}
-        </section>
+      {simulationReport && (
+        <iframe
+          className={styles.simulationReport}
+          title="SimulationCraft Ergebnis"
+          srcDoc={simulationReport}
+        />
       )}
       <div className={styles.ctas}>
         <textarea
@@ -168,7 +194,7 @@ export function SimCurrentGear() {
           onChange={(event) => {
             setSimcProfile(event.target.value);
             setSelectedItems(new Set());
-            setSimulationReports([]);
+            setSimulationReport("");
           }}
           placeholder="SimulationCraft-Addon-Profil hier einfügen"
           disabled={isLoading}
@@ -177,9 +203,10 @@ export function SimCurrentGear() {
       <section className={styles.itemCompare}>
         <h2>Items aus den Taschen auswählen</h2>
         <p>
-          Ausgewählte Items ersetzen den aktuell ausgerüsteten Gegenstand im SimC-
-          Profil. Pro Slot kann nur ein Item ausgewählt werden. Der SimC-HTML-Report
-          enthält anschließend die Simulation mit dieser Gear-Auswahl.
+          Wähle bis zu 20 Items, auch mehrere pro Slot: SimC erhält dann alle
+          möglichen Gear-Kombinationen als Top-Gear-Profile. Der Originalcharakter
+          dient als Vergleich im selben HTML-Report. Maximal{" "}
+          {MAX_TOP_GEAR_COMBINATIONS} Kombinationen pro Lauf.
         </p>
         {candidates.length === 0 ? (
           <p role="status">
@@ -190,8 +217,8 @@ export function SimCurrentGear() {
         ) : (
           <>
             <p>
-              Ausgewählt: {selectedItems.size} / {candidates.length} (maximal{" "}
-              {MAX_ITEMS_PER_COMPARISON} pro Simulation)
+              Ausgewählt: {selectedItems.size} / {candidates.length} Items ·{" "}
+              {topGearCombinationCount} Kombination(en)
             </p>
             {candidates.map((candidate, index) => (
               <label
@@ -211,13 +238,12 @@ export function SimCurrentGear() {
                       }
                       return next;
                     });
-                    setSimulationReports([]);
+                    setSimulationReport("");
                   }}
                   disabled={
                     isLoading ||
                     (!selectedItems.has(index) &&
-                      (selectedItems.size >= MAX_ITEMS_PER_COMPARISON ||
-                        selectedSlots.has(candidate.slot)))
+                      selectedItems.size >= MAX_SELECTED_ITEMS)
                   }
                 />
                 <Image
@@ -241,16 +267,23 @@ export function SimCurrentGear() {
             ))}
           </>
         )}
+        {topGearCombinationCount > MAX_TOP_GEAR_COMBINATIONS && (
+          <p className={styles.errorMessage} role="alert">
+            Die Auswahl erzeugt {topGearCombinationCount} Kombinationen. Maximal{" "}
+            {MAX_TOP_GEAR_COMBINATIONS} sind erlaubt; entferne einige Items oder
+            Optionen aus Slots.
+          </p>
+        )}
         {errorMessage && <p className={styles.errorMessage} role="alert">{errorMessage}</p>}
         <div className={styles.ctas}>
           <button
             className={styles.secondary}
             type="button"
             onClick={runCurrentGear}
-            disabled={isLoading}
+            disabled={isLoading || topGearCombinationCount > MAX_TOP_GEAR_COMBINATIONS}
           >
             {selectedCandidates.length > 0
-              ? "Aktuelles Gear mit Auswahl simulieren"
+              ? "Top Gear simulieren"
               : "Nur aktuelles Gear simulieren"}
           </button>
           <a
