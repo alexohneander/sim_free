@@ -18,6 +18,11 @@ interface ItemCandidate {
   name: string;
 }
 
+interface SimulationReport {
+  title: string;
+  html: string;
+}
+
 function parseBagItems(profile: string): ItemCandidate[] {
   const items: ItemCandidate[] = [];
   let inBagSection = false;
@@ -79,8 +84,7 @@ function applySelectedItems(profile: string, items: ItemCandidate[]): string {
 }
 
 export function SimCurrentGear() {
-  const [isFetched, setIsFetched] = useState(false);
-  const [fetchedData, setFetchedData] = useState("");
+  const [simulationReports, setSimulationReports] = useState<SimulationReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [simcProfile, setSimcProfile] = useState("");
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
@@ -93,24 +97,36 @@ export function SimCurrentGear() {
   async function runCurrentGear() {
     setIsLoading(true);
     setErrorMessage("");
-    setIsFetched(false);
+    setSimulationReports([]);
 
     try {
-      const formData = new FormData();
-      formData.set(
-        "simcprofile",
-        applySelectedItems(simcProfile, selectedCandidates),
-      );
-      const response = await fetch("/sim/current_gear", {
-        method: "POST",
-        body: formData,
-      });
+      const profiles = selectedCandidates.length > 0
+        ? [
+            { title: "Aktuelles Gear", profile: simcProfile },
+            {
+              title: "Ausgewählte Items",
+              profile: applySelectedItems(simcProfile, selectedCandidates),
+            },
+          ]
+        : [{ title: "Aktuelles Gear", profile: simcProfile }];
+      const reports: SimulationReport[] = [];
 
-      if (!response.ok) {
-        throw new Error(`Simulation fehlgeschlagen (HTTP ${response.status}).`);
+      for (const sim of profiles) {
+        const formData = new FormData();
+        formData.set("simcprofile", sim.profile);
+        const response = await fetch("/sim/current_gear", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `${sim.title}: Simulation fehlgeschlagen (HTTP ${response.status}).`,
+          );
+        }
+        reports.push({ title: sim.title, html: await response.text() });
       }
-      setFetchedData(await response.text());
-      setIsFetched(true);
+      setSimulationReports(reports);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unbekannter Fehler.");
     } finally {
@@ -124,12 +140,23 @@ export function SimCurrentGear() {
         className={styles.loader}
         style={{ display: isLoading ? "block" : "none" }}
       />
-      {isFetched && (
-        <iframe
-          title="SimulationCraft Ergebnis"
-          style={{ width: "100%", height: "100vh", marginBottom: "50px" }}
-          srcDoc={fetchedData}
-        />
+      {simulationReports.length > 0 && (
+        <section
+          className={`${styles.simulationReports} ${
+            simulationReports.length === 1 ? styles.singleSimulationReport : ""
+          }`}
+          aria-label="Simulationsergebnisse"
+        >
+          {simulationReports.map((report) => (
+            <div className={styles.simulationReport} key={report.title}>
+              <h2>{report.title}</h2>
+              <iframe
+                title={`SimulationCraft: ${report.title}`}
+                srcDoc={report.html}
+              />
+            </div>
+          ))}
+        </section>
       )}
       <div className={styles.ctas}>
         <textarea
@@ -141,7 +168,7 @@ export function SimCurrentGear() {
           onChange={(event) => {
             setSimcProfile(event.target.value);
             setSelectedItems(new Set());
-            setIsFetched(false);
+            setSimulationReports([]);
           }}
           placeholder="SimulationCraft-Addon-Profil hier einfügen"
           disabled={isLoading}
@@ -184,6 +211,7 @@ export function SimCurrentGear() {
                       }
                       return next;
                     });
+                    setSimulationReports([]);
                   }}
                   disabled={
                     isLoading ||

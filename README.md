@@ -5,8 +5,9 @@ SimC-Free is an open-source, customizable raid bot designed to simulate and anal
 
 Paste the full SimulationCraft addon profile into the frontend. Items listed
 under `### Gear from Bags` are detected automatically. Select up to 20 items
-(one per slot) and run one SimulationCraft report with the selected items
-equipped alongside your unchanged gear in all other slots.
+(one per slot) to run two SimulationCraft reports: the current gear and the
+selected items equipped alongside unchanged gear in all other slots. The HTML
+reports are shown side by side.
 
 ### How to Use:
 
