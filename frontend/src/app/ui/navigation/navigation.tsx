@@ -9,7 +9,7 @@ export function Navigation() {
           <a className={styles.logo} href="/">
             <Image
               className={styles.logo}
-              src={`https://sim-free.dev-null.rocks/img/warcraft-icon-22.png`}
+              src="/img/warcraft-icon-22.png"
               alt="Sim-Free Logo"
               width={60}
               height={60}

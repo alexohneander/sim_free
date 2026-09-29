@@ -8,7 +8,7 @@ export function Intro() {
       <a href="/" style={{ margin: "auto" }}>
         <Image
           className={styles.logo}
-          src={`https://sim-free.dev-null.rocks/img/warcraft-icon-22.png`}
+          src="/img/warcraft-icon-22.png"
           alt="Sim-Free Logo"
           width={150}
           height={150}
