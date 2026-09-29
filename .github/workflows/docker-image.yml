@@ -53,17 +53,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: deploying
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            docker image pull ghcr.io/alexohneander/sim-free:latest
-            docker container stop sim-free
-            docker container rm sim-free
-            docker container run -d --name sim-free -p 8000:8000 ghcr.io/alexohneander/sim-free:latest
