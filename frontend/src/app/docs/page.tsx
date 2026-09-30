@@ -36,9 +36,10 @@ export default function Docs() {
         <h2>Top Gear combinations</h2>
         <p>
           Selected bag items are grouped by gear slot. Items in the same slot
-          are alternatives; SimC tests every combination that uses one selected
-          item per selected slot. The original character is included as the
-          baseline. A run supports up to 20 selected items and 100 combinations.
+          are alternatives to the currently equipped item. SimC tests every
+          combination across the selected slots, including the original gear as
+          the baseline. A run supports up to 20 selected items and 100 total
+          combinations.
         </p>
 
         <h2>Self-hosting</h2>

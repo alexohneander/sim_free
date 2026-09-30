@@ -83,7 +83,7 @@ function getTopGearCombinationCount(items: ItemCandidate[]): number {
     slotOptions.set(slot, (slotOptions.get(slot) ?? 0) + 1);
   });
   return [...slotOptions.values()].reduce(
-    (count, optionCount) => count * optionCount,
+    (count, optionCount) => count * (optionCount + 1),
     1,
   );
 }
@@ -112,7 +112,9 @@ function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
 
   function buildCombinations(slotIndex: number, current: ItemCandidate[]) {
     if (slotIndex === slots.length) {
-      combinations.push(current);
+      if (current.length > 0) {
+        combinations.push(current);
+      }
       return;
     }
 
@@ -120,7 +122,10 @@ function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
     if (!options) {
       throw new Error(`No items were found for the ${slots[slotIndex]} slot.`);
     }
-    options.forEach((item) => buildCombinations(slotIndex + 1, [...current, item]));
+    buildCombinations(slotIndex + 1, current);
+    options.forEach((item) =>
+      buildCombinations(slotIndex + 1, [...current, item]),
+    );
   }
 
   buildCombinations(0, []);
@@ -128,8 +133,8 @@ function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
   const actorName = getActorName(profile);
   const copies = combinations.flatMap((combination, index) => [
     "",
-    `copy="Top Gear ${index + 1},${actorName}"`,
-    `### Top Gear ${index + 1}`,
+    `copy="Top Gear ${index + 2},${actorName}"`,
+    `### Top Gear ${index + 2}`,
     ...combination.flatMap((item) => [`# ${item.name}`, item.line]),
   ]);
 
@@ -217,9 +222,9 @@ export function SimCurrentGear() {
         <h2>Select items from your bags</h2>
         <p>
           Choose up to {MAX_SELECTED_ITEMS} items. Items in the same slot are
-          treated as alternatives, and your current gear is included as the
-          baseline in the HTML report. Each run supports up to{" "}
-          {MAX_TOP_GEAR_COMBINATIONS} combinations.
+          alternatives to your currently equipped item. The report includes
+          every combination, including your current gear. Each run supports up
+          to {MAX_TOP_GEAR_COMBINATIONS} combinations.
         </p>
         {candidates.length === 0 ? (
           <p role="status">

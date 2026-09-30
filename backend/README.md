@@ -5,11 +5,13 @@
 Sim-Free runs SimulationCraft for a pasted SimC addon profile. Items listed
 under `### Gear from Bags` are detected by the frontend. Selected items replace
 the currently equipped item in the same slot. When multiple items are selected
-for a slot, the frontend generates a SimC Top Gear profile with one copied
-actor per combination and enables `single_actor_batch=1`. SimC runs the
-original actor and all gear combinations in a single simulation and returns
-one HTML report. With no selection, only the original profile is simulated.
-Select up to 20 items; profiles are limited to 100 combinations per run.
+for a slot, they are alternatives to the currently equipped item. The frontend
+generates a SimC Top Gear profile with one copied actor per combination other
+than the original equipped gear, and enables `single_actor_batch=1`. SimC runs
+the original actor and all gear combinations in a single simulation and
+returns one HTML report. With no selection, only the original profile is
+simulated. Select up to 20 items; profiles are limited to 100 total
+combinations per run, including the original gear.
 
 ### Installation
 ```bash
