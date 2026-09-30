@@ -12,12 +12,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build and publish Docker image
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -43,7 +47,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=tag
-            type=sha,prefix=sha-
+            type=sha,format=long,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
@@ -53,3 +57,24 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update dev image tag
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          image_tag="sha-${GITHUB_SHA}"
+          values_file="helm/sim-free/values-dev.yaml"
+          sed -i "s/^  tag: .*/  tag: ${image_tag}/" "$values_file"
+          grep -q "^  tag: ${image_tag}$" "$values_file"
+
+          if git diff --quiet -- "$values_file"; then
+            echo "Dev image tag is already ${image_tag}."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$values_file"
+          git commit -m "chore(deploy): update dev image to ${image_tag}"
+          git push
