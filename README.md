@@ -48,7 +48,8 @@ items, with a limit of 100 combinations per run.
 
 The frontend is a Next.js static export; the FastAPI backend serves that export
 and runs SimulationCraft. The Dockerfile builds the frontend and packages it
-with the SimC backend. GitHub Actions publishes images to
+with the SimC backend. At startup, the backend reads the bundled SimulationCraft
+version and exposes it in the site footer. GitHub Actions publishes images to
 `ghcr.io/alexohneander/sim-free` on pushes to `main`; pull requests only build
 the image without publishing it. After a successful build on `main`, the
 workflow updates `helm/sim-free/values-dev.yaml` to the immutable full-SHA

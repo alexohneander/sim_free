@@ -3,6 +3,8 @@ import logging
 import uuid
 import time
 import functools
+import subprocess
+from contextlib import asynccontextmanager
 
 from simcrunner import Simc, Arguments, Profile
 
@@ -28,9 +30,33 @@ logging.basicConfig(level=logging.INFO)
 # simc_path = os.path.join('tests', 'simc')
 simc_path = "./"
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    result = subprocess.run(
+        [os.path.join(simc_path, "simc")],
+        capture_output=True,
+        check=True,
+        text=True,
+    )
+    version_output = f"{result.stdout}\n{result.stderr}"
+    app.state.simc_version = next(
+        (
+            "SimulationCraft " + line.strip().split("SimulationCraft ", 1)[1]
+            for line in version_output.splitlines()
+            if "SimulationCraft " in line
+        ),
+        None,
+    )
+    if app.state.simc_version is None:
+        raise RuntimeError("SimulationCraft did not report its version.")
+    yield
+
+
 app = FastAPI(
     title = "SimC-Free Backend",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 origins = [
@@ -56,6 +82,11 @@ app.mount("/img", StaticFiles(directory="templates/img"), name="static")
 def read_root():
     index_path = os.path.join('templates', 'index.html')
     return FileResponse(index_path)
+
+
+@app.get("/api/simc-version")
+def read_simc_version():
+    return {"version": app.state.simc_version}
 
 
 @app.exception_handler(StarletteHTTPException)

@@ -1,7 +1,33 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import styles from "../page.module.css";
 
 export function Footer() {
+  const [simcVersion, setSimcVersion] = useState(
+    "Loading SimulationCraft version...",
+  );
+
+  useEffect(() => {
+    async function loadSimcVersion() {
+      try {
+        const response = await fetch("/api/simc-version");
+        if (!response.ok) {
+          throw new Error(`Version request failed: ${response.status}`);
+        }
+
+        const data: { version: string } = await response.json();
+        setSimcVersion(data.version);
+      } catch (error) {
+        console.error("Could not load the SimulationCraft version.", error);
+        setSimcVersion("SimulationCraft version unavailable");
+      }
+    }
+
+    void loadSimcVersion();
+  }, []);
+
   return (
     <footer className={styles.footer}>
       <div className={styles.footerBrand}>
@@ -34,6 +60,9 @@ export function Footer() {
       </nav>
       <p className={styles.footerCopyright}>
         Powered by SimulationCraft
+        <span className={styles.simcVersion} aria-live="polite">
+          {simcVersion}
+        </span>
       </p>
     </footer>
   );
