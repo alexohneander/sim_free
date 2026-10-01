@@ -46,6 +46,11 @@ that chooses one selected item per selected slot, while retaining the original
 character as the baseline in the same HTML report. You can select up to 20
 items, with a limit of 100 combinations per run.
 
+Simulation options included in a pasted profile, such as the `# Simulation
+Options` section exported by Raidbots, are passed through to SimulationCraft.
+The defaults `iterations=1000`, `target_error=0.05`, and `threads=4` are only
+used when the profile does not set those options.
+
 ## Development
 
 The frontend is a Next.js static export; the FastAPI backend serves that export

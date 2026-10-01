@@ -42,6 +42,14 @@ export default function Docs() {
           combinations.
         </p>
 
+        <h2>Simulation options</h2>
+        <p>
+          Options included at the end of a pasted profile, including Raidbots&apos;
+          Simulation Options, are passed through to SimulationCraft. The
+          defaults for iterations, target error, and threads are only applied
+          when those options are not present in the profile.
+        </p>
+
         <h2>Self-hosting</h2>
         <p>
           Build and run the Docker image from the project root. It includes the

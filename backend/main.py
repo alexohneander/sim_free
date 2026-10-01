@@ -7,6 +7,7 @@ import subprocess
 from contextlib import asynccontextmanager
 
 from simcrunner import Simc, Arguments, Profile
+from simc_options import get_default_simc_options
 
 from typing import Annotated
 from fastapi import FastAPI, Form
@@ -105,13 +106,11 @@ def simulate_current_gear(simcprofile: Annotated[str, Form()]):
     html_export = HtmlExport(export_path)
 
     profile = Profile(profile_path)
-    args = Arguments(profile, iterations=1000)
+    args = Arguments(profile, *get_default_simc_options(simcprofile))
 
     runner = Simc(simc_path=simc_path)
     (runner
-        .add_args(args)
-        .add_args('target_error=0.05', threads=4)
-        .add_args(html_export)
+        .add_args(args, html_export)
         .run())
 
     return FileResponse(export_path)
