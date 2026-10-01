@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "../../page.module.css";
 
 const GEAR_SLOTS = new Set([
@@ -17,6 +17,53 @@ interface ItemCandidate {
   line: string;
   itemId: string;
   name: string;
+}
+
+interface SimulationJobStatus {
+  status: "queued" | "started" | "finished" | "failed";
+  queue_position?: number | null;
+  report?: string;
+  error?: string;
+}
+
+async function pollSimulation(
+  jobId: string,
+  signal: AbortSignal,
+  onQueueMessage: (message: string) => void,
+): Promise<string> {
+  while (true) {
+    const response = await fetch(
+      `/api/simulations/${encodeURIComponent(jobId)}`,
+      { signal },
+    );
+    if (!response.ok) {
+      throw new Error(
+        response.status === 404
+          ? "This simulation link has expired or does not exist."
+          : `Could not read simulation status (HTTP ${response.status}).`,
+      );
+    }
+
+    const job = await response.json() as SimulationJobStatus;
+    if (job.status === "finished") {
+      if (!job.report) {
+        throw new Error("The simulation completed without a report.");
+      }
+      return job.report;
+    }
+    if (job.status === "failed") {
+      throw new Error(job.error ?? "The simulation failed.");
+    }
+
+    onQueueMessage(
+      job.status === "started"
+        ? "Simulation is running…"
+        : typeof job.queue_position === "number"
+        ? `Queue position: ${job.queue_position}`
+        : "Waiting in the simulation queue…",
+    );
+    await new Promise((resolve) => window.setTimeout(resolve, 2000));
+  }
 }
 
 function parseBagItems(profile: string): ItemCandidate[] {
@@ -150,9 +197,71 @@ function createTopGearProfile(profile: string, items: ItemCandidate[]): string {
 export function SimCurrentGear() {
   const [simulationReport, setSimulationReport] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [queueMessage, setQueueMessage] = useState("");
   const [simcProfile, setSimcProfile] = useState("");
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [errorMessage, setErrorMessage] = useState("");
+  const [simulationUrl, setSimulationUrl] = useState("");
+  const activeController = useRef<AbortController | null>(null);
+
+  const watchJob = useCallback((jobId: string) => {
+    activeController.current?.abort();
+    const controller = new AbortController();
+    activeController.current = controller;
+    setSimulationUrl(window.location.href);
+    setIsLoading(true);
+    setErrorMessage("");
+    setSimulationReport("");
+    setQueueMessage("Checking queue position…");
+
+    void pollSimulation(jobId, controller.signal, setQueueMessage)
+      .then(setSimulationReport)
+      .catch((error: unknown) => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred.",
+          );
+          setQueueMessage("");
+        }
+      })
+      .finally(() => {
+        if (activeController.current === controller) {
+          activeController.current = null;
+          setIsLoading(false);
+          setQueueMessage("");
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    const loadFromUrl = () => {
+      const jobId = new URLSearchParams(window.location.search).get(
+        "simulation",
+      );
+      if (jobId) {
+        watchJob(jobId);
+        return;
+      }
+
+      activeController.current?.abort();
+      activeController.current = null;
+      setSimulationUrl("");
+      setSimulationReport("");
+      setQueueMessage("");
+      setErrorMessage("");
+      setIsLoading(false);
+    };
+
+    loadFromUrl();
+    window.addEventListener("popstate", loadFromUrl);
+    return () => {
+      window.removeEventListener("popstate", loadFromUrl);
+      activeController.current?.abort();
+      activeController.current = null;
+    };
+  }, [watchJob]);
 
   const candidates = parseBagItems(simcProfile);
   const selectedCandidates = candidates.filter((_, index) =>
@@ -163,7 +272,11 @@ export function SimCurrentGear() {
   async function runCurrentGear() {
     setIsLoading(true);
     setErrorMessage("");
+    setQueueMessage("Submitting simulation…");
     setSimulationReport("");
+    setSimulationUrl("");
+    const controller = new AbortController();
+    activeController.current = controller;
 
     try {
       const profile = selectedCandidates.length > 0
@@ -174,18 +287,39 @@ export function SimCurrentGear() {
       const response = await fetch("/sim/current_gear", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
         throw new Error(`Simulation failed (HTTP ${response.status}).`);
       }
-      setSimulationReport(await response.text());
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "An unexpected error occurred.",
+      const { job_id: jobId } = await response.json() as { job_id: string };
+      if (!jobId) {
+        throw new Error("The server did not return a simulation job ID.");
+      }
+
+      const resultUrl = new URL(window.location.href);
+      resultUrl.searchParams.set("simulation", jobId);
+      window.history.pushState(
+        {},
+        "",
+        `${resultUrl.pathname}${resultUrl.search}${resultUrl.hash}`,
       );
+      watchJob(jobId);
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
+        );
+        setQueueMessage("");
+      }
     } finally {
-      setIsLoading(false);
+      if (activeController.current === controller) {
+        activeController.current = null;
+        setIsLoading(false);
+      }
     }
   }
 
@@ -195,6 +329,12 @@ export function SimCurrentGear() {
         className={styles.loader}
         style={{ display: isLoading ? "block" : "none" }}
       />
+      {queueMessage && <p role="status">{queueMessage}</p>}
+      {simulationUrl && (
+        <p>
+          Shareable simulation URL: <a href={simulationUrl}>{simulationUrl}</a>
+        </p>
+      )}
       {simulationReport && (
         <iframe
           className={styles.simulationReport}
@@ -213,6 +353,7 @@ export function SimCurrentGear() {
             setSimcProfile(event.target.value);
             setSelectedItems(new Set());
             setSimulationReport("");
+            setQueueMessage("");
           }}
           placeholder="Paste your SimulationCraft addon profile here"
           disabled={isLoading}

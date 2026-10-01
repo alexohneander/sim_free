@@ -10,11 +10,12 @@ SimulationCraft to run the simulations and displays the resulting HTML report.
 ```bash
 git clone https://github.com/alexohneander/sim_free.git
 cd sim_free
-docker build -t sim-free .
-docker run --rm -p 8000:8000 sim-free
+docker compose up --build --scale worker=2
 ```
 
 Open [http://localhost:8000](http://localhost:8000).
+Use `docker compose down` to stop the services; Redis data remains in its
+named volume.
 
 ## Deploy to Kubernetes
 
@@ -46,6 +47,10 @@ that chooses one selected item per selected slot, while retaining the original
 character as the baseline in the same HTML report. You can select up to 20
 items, with a limit of 100 combinations per run.
 
+Each submitted simulation gets a unique link in the browser address bar.
+Reopening or refreshing that link restores the report (or resumes showing the
+queue position while it is still waiting). Results are retained for 24 hours.
+
 Simulation options included in a pasted profile, such as the `# Simulation
 Options` section exported by Raidbots, are passed through to SimulationCraft.
 The defaults `iterations=1000`, `target_error=0.05`, and `threads=4` are only
@@ -54,13 +59,17 @@ used when the profile does not set those options.
 ## Development
 
 The frontend is a Next.js static export; the FastAPI backend serves that export
-and runs SimulationCraft. The Dockerfile builds the frontend and packages it
-with the SimC backend. At startup, the backend reads the bundled SimulationCraft
-version and exposes it in the site footer. GitHub Actions publishes images to
+and enqueues SimulationCraft jobs in Redis. Separate workers run simulations;
+the frontend waits for job completion and then displays the report. The
+Dockerfile builds the frontend and packages it with the SimC backend. At
+startup, the backend reads the bundled SimulationCraft version and exposes it
+in the site footer. GitHub Actions publishes images to
 `ghcr.io/alexohneander/sim-free` on pushes to `main`; pull requests only build
 the image without publishing it. After a successful build on `main`, the
 workflow updates `helm/sim-free/values-dev.yaml` to the immutable full-SHA
 image tag so Argo CD can deploy it. Make the GHCR package public if your
-Kubernetes cluster should pull it without registry credentials. See
+Kubernetes cluster should pull it without registry credentials. Run local
+development with `docker compose up --build --scale worker=2`; Redis persists
+its queue and result data in a named volume. See
 [backend/README.md](./backend/README.md) and
 [frontend/README.md](./frontend/README.md) for component-specific details.

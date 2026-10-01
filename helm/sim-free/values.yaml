@@ -1,4 +1,7 @@
 replicaCount: 1
+worker:
+  replicaCount: 2
+  resources: {}
 
 image:
   repository: ghcr.io/alexohneander/sim-free
@@ -25,6 +28,16 @@ service:
   type: ClusterIP
   port: 8000
   annotations: {}
+
+redis:
+  enabled: true
+  url: ""
+  image: redis:7.4-alpine
+  maxmemory: 512mb
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClassName: ""
 
 ingress:
   enabled: false

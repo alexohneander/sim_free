@@ -25,10 +25,14 @@ pip install -r backend/requirements.txt
 
 The backend requires a SimulationCraft executable available in its working
 directory. For the complete self-hosted setup, use the root Dockerfile, which
-packages the frontend and SimulationCraft together.
+packages the frontend and SimulationCraft together. The API queues simulation
+jobs in Redis; one or more separate worker processes run SimulationCraft.
+Completed HTML reports remain available for 24 hours.
 
-### Run the backend
+### Run locally with Docker Compose
 ```bash
-cd backend
-fastapi run main.py
+docker compose up --build --scale worker=2
 ```
+
+Open [http://localhost:8000](http://localhost:8000). Compose starts Redis,
+the web API, and two workers, and stores Redis data in a named volume.

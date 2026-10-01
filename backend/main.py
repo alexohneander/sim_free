@@ -1,34 +1,31 @@
 import os
 import logging
-import uuid
-import time
-import functools
 import subprocess
 from contextlib import asynccontextmanager
 
-from simcrunner import Simc, Arguments, Profile
-from simc_options import get_default_simc_options
-
 from typing import Annotated
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, HTTPException, Response, status
+from redis.exceptions import RedisError
+from rq.exceptions import NoSuchJobError
+from rq.job import Job
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from fastapi.responses import PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.exception_handlers import (
-    http_exception_handler,
-    request_validation_exception_handler,
-)
+from fastapi.exception_handlers import http_exception_handler
 
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse, HTMLResponse
-from simcrunner.simc import HtmlExport
+from starlette.responses import FileResponse
+
+from queue_backend import (
+    enqueue_simulation,
+    get_redis_connection,
+    get_queue_position,
+)
 
 # SIMC Settings
 logging.basicConfig(level=logging.INFO)
-# simc_path = os.path.join('tests', 'simc')
 simc_path = "./"
 
 
@@ -93,54 +90,77 @@ def read_simc_version():
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request, exc):
     logging.warning("HTTP error on %s: %r", request.url.path, exc)
-    if request.url.path.startswith("/sim/") or exc.status_code != 404:
+    if request.url.path.startswith(("/sim/", "/api/")) or exc.status_code != 404:
         return await http_exception_handler(request, exc)
     index_path = os.path.join('templates', '404.html')
     return FileResponse(index_path)
 
 @app.post("/sim/current_gear")
-def simulate_current_gear(simcprofile: Annotated[str, Form()]):
+def simulate_current_gear(
+    response: Response,
+    simcprofile: Annotated[str, Form()],
+):
+    try:
+        job = enqueue_simulation(simcprofile)
+    except RedisError as exc:
+        logging.exception("Unable to enqueue simulation")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The simulation queue is temporarily unavailable.",
+        ) from exc
 
-    profile_path = create_sim_arguments(simcprofile)
-    export_path = create_html_export()
-    html_export = HtmlExport(export_path)
-
-    profile = Profile(profile_path)
-    args = Arguments(profile, *get_default_simc_options(simcprofile))
-
-    runner = Simc(simc_path=simc_path)
-    (runner
-        .add_args(args, html_export)
-        .run())
-
-    return FileResponse(export_path)
-# HELPER Functions
-def create_profile(profile_path: str, profile_data: str):
-    os.makedirs(os.path.dirname(profile_path) or ".", exist_ok=True)
-    with open(profile_path, 'w') as file:
-        # Write content to the file
-        file.write(profile_data)
-
-def create_html_export():
-    rand_uuid = uuid.uuid4()
-    export_path = os.path.join('results', str(rand_uuid)+'.html')
-
-    return export_path
-
-def create_sim_arguments(profile_data: str):
-    rand_uuid = uuid.uuid4()
-    profile_path = os.path.join('profiles', str(rand_uuid)+'.simc')
-
-    create_profile(profile_path, profile_data)
-
-    return profile_path
+    response.status_code = status.HTTP_202_ACCEPTED
+    return {"job_id": job.id}
 
 
-@functools.lru_cache(maxsize=2)
-def read_file_with_lru_cache(file_path):
-    # Read the file content
-    with open(file_path, 'r', encoding="utf-8") as file:
-        file_content = file.read()
-        print(f"Reading from file: {file_path}")
+@app.get("/api/simulations/{job_id}")
+def get_simulation_status(job_id: str):
+    try:
+        job = Job.fetch(job_id, connection=get_redis_connection())
+        job_status = job.get_status(refresh=True)
+        status_value = getattr(job_status, "value", job_status)
+        queue_position = (
+            get_queue_position(job)
+            if status_value in ("created", "queued", "deferred", "scheduled")
+            else None
+        )
+        report = (
+            job.return_value(refresh=True)
+            if status_value == "finished"
+            else None
+        )
+    except NoSuchJobError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Simulation job not found or expired.",
+        ) from exc
+    except RedisError as exc:
+        logging.exception("Unable to read simulation job %s", job_id)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The simulation queue is temporarily unavailable.",
+        ) from exc
 
-    return file_content
+    if status_value == "finished":
+        if not isinstance(report, str):
+            logging.error("Finished simulation job %s has no HTML report", job_id)
+            return {
+                "status": "failed",
+                "error": "The simulation finished without a report. Please retry.",
+            }
+        return {"status": "finished", "report": report}
+    if status_value in ("failed", "stopped", "canceled"):
+        return {
+            "status": "failed",
+            "error": "The simulation could not be completed. Please retry.",
+        }
+    if status_value == "started":
+        return {"status": "started"}
+    if status_value in ("created", "queued", "deferred", "scheduled"):
+        return {"status": "queued", "queue_position": queue_position}
+
+    logging.error("Simulation job %s has unexpected status %r", job_id, status_value)
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="The simulation job has an unexpected status.",
+    )
