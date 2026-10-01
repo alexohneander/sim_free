@@ -1,6 +1,6 @@
-# SimC-Free
+# OpenSim
 
-SimC-Free is a self-hosted World of Warcraft gear simulator. It uses
+OpenSim is a self-hosted World of Warcraft gear simulator. It uses
 SimulationCraft to run the simulations and displays the resulting HTML report.
 
 ![SimC-Free showing selected items for a Top Gear simulation](./screenshots/top-gear-selection.png)
