@@ -1,38 +1,30 @@
-import Image from "next/image";
-import Link from "next/link";
 import styles from "../page.module.css";
+import { Footer } from "./footer";
 import { SimCurrentGear } from "./forms/simCurrentGear";
 
 export function Intro() {
   return (
-    <main className={styles.main}>
-      <Link href="/" style={{ margin: "auto" }}>
-        <Image
-          className={styles.logo}
-          src="/img/warcraft-icon-22.png"
-          alt="Sim-Free Logo"
-          width={150}
-          height={150}
-          priority
-        />
-      </Link>
-      <ol>
-        <li>
-          Copy/paste the text from the SimulationCraft addon. {}
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <header className={styles.hero}>
+          <p className={styles.eyebrow}>World of Warcraft · Gear simulator</p>
+          <h1>Find your next upgrade.</h1>
+          <p>
+            Run SimulationCraft on your own server and compare gear
+            combinations against your current setup.
+          </p>
           <a
-            className={styles.primary}
+            className={styles.installLink}
             target="_blank"
+            rel="noreferrer"
             href="https://github.com/simulationcraft/simc-addon"
           >
-            How to install and use the SimC addon
+            How to install the SimulationCraft addon <span aria-hidden="true">↗</span>
           </a>
-        </li>
-        <li>
-          Select items from <code>Gear from Bags</code> to compare Top Gear
-          combinations against your current gear.
-        </li>
-      </ol>
-      <SimCurrentGear />
-    </main>
+        </header>
+        <SimCurrentGear />
+      </main>
+      <Footer />
+    </div>
   );
 }

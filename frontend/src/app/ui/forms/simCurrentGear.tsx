@@ -324,28 +324,23 @@ export function SimCurrentGear() {
   }
 
   return (
-    <div>
-      <div
-        className={styles.loader}
-        style={{ display: isLoading ? "block" : "none" }}
-      />
-      {queueMessage && <p role="status">{queueMessage}</p>}
-      {simulationUrl && (
-        <p>
-          Shareable simulation URL: <a href={simulationUrl}>{simulationUrl}</a>
-        </p>
-      )}
-      {simulationReport && (
-        <iframe
-          className={styles.simulationReport}
-          title="SimulationCraft Ergebnis"
-          srcDoc={simulationReport}
-        />
-      )}
-      <div className={styles.ctas}>
+    <div className={styles.simulator}>
+      <section className={styles.profileCard} aria-labelledby="profile-heading">
+        <div className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>01 / Character profile</p>
+            <h2 id="profile-heading">Paste your SimulationCraft profile</h2>
+          </div>
+          <span className={styles.profileCount}>
+            {simcProfile.length.toLocaleString()} characters
+          </span>
+        </div>
+        <label className={styles.visuallyHidden} htmlFor="simcprofile">
+          SimulationCraft profile
+        </label>
         <textarea
-          className={styles.textarea}
-          rows={10}
+          className={styles.profileInput}
+          rows={12}
           id="simcprofile"
           name="simcprofile"
           value={simcProfile}
@@ -355,75 +350,101 @@ export function SimCurrentGear() {
             setSimulationReport("");
             setQueueMessage("");
           }}
-          placeholder="Paste your SimulationCraft addon profile here"
+          placeholder={`player=YourCharacter
+...
+### Gear from Bags
+...`}
           disabled={isLoading}
+          spellCheck={false}
         />
-      </div>
-      <section className={styles.itemCompare}>
-        <h2>Select items from your bags</h2>
-        <p>
+        <p className={styles.fieldHint}>
+          Copy the complete profile from the SimulationCraft addon. Bag items
+          will appear below when they are included in the profile.
+        </p>
+      </section>
+
+      <section className={styles.itemCompare} aria-labelledby="bags-heading">
+        <div className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>02 / Optional</p>
+            <h2 id="bags-heading">Compare items from your bags</h2>
+          </div>
+          {candidates.length > 0 && (
+            <span className={styles.selectionBadge}>
+              {selectedItems.size} selected
+            </span>
+          )}
+        </div>
+        <p className={styles.sectionDescription}>
           Choose up to {MAX_SELECTED_ITEMS} items. Items in the same slot are
           alternatives to your currently equipped item. The report includes
-          every combination, including your current gear. Each run supports up
-          to {MAX_TOP_GEAR_COMBINATIONS} combinations.
+          your current gear as the baseline.
         </p>
         {candidates.length === 0 ? (
-          <p role="status">
+          <p className={styles.emptySelection} role="status">
             {simcProfile.trim()
               ? "No bag items were found in this profile."
               : "Paste your complete SimulationCraft addon profile to get started."}
           </p>
         ) : (
           <>
-            <p>
-              Selected: {selectedItems.size} / {candidates.length} items ·{" "}
-              {topGearCombinationCount} combination(s)
-            </p>
-            {candidates.map((candidate, index) => (
-              <label
-                className={styles.itemOption}
-                key={`${candidate.slot}-${candidate.itemId}-${index}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedItems.has(index)}
-                  onChange={(event) => {
-                    setSelectedItems((previous) => {
-                      const next = new Set(previous);
-                      if (event.target.checked) {
-                        next.add(index);
-                      } else {
-                        next.delete(index);
-                      }
-                      return next;
-                    });
-                    setSimulationReport("");
-                  }}
-                  disabled={
-                    isLoading ||
-                    (!selectedItems.has(index) &&
-                      selectedItems.size >= MAX_SELECTED_ITEMS)
-                  }
-                />
-                <Image
-                  className={styles.itemIcon}
-                  src={`https://www.raidbots.com/icon/36/id/item/${candidate.itemId}.png`}
-                  alt=""
-                  aria-hidden
-                  width={36}
-                  height={36}
-                  unoptimized
-                  onError={(event) => {
-                    event.currentTarget.style.visibility = "hidden";
-                  }}
-                />
-                <span>
-                  <strong>{candidate.name}</strong>
-                  <br />
-                  {candidate.slot} · Item {candidate.itemId}
-                </span>
-              </label>
-            ))}
+            <div className={styles.selectionSummary} aria-live="polite">
+              <span>
+                {selectedItems.size} of {candidates.length} bag items selected
+              </span>
+              <span>
+                {topGearCombinationCount} / {MAX_TOP_GEAR_COMBINATIONS}{" "}
+                combinations
+              </span>
+            </div>
+            <div className={styles.itemGrid}>
+              {candidates.map((candidate, index) => (
+                <label
+                  className={`${styles.itemOption} ${
+                    selectedItems.has(index) ? styles.itemOptionSelected : ""
+                  }`}
+                  key={`${candidate.slot}-${candidate.itemId}-${index}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.has(index)}
+                    onChange={(event) => {
+                      setSelectedItems((previous) => {
+                        const next = new Set(previous);
+                        if (event.target.checked) {
+                          next.add(index);
+                        } else {
+                          next.delete(index);
+                        }
+                        return next;
+                      });
+                      setSimulationReport("");
+                    }}
+                    disabled={
+                      isLoading ||
+                      (!selectedItems.has(index) &&
+                        selectedItems.size >= MAX_SELECTED_ITEMS)
+                    }
+                  />
+                  <Image
+                    className={styles.itemIcon}
+                    src={`https://www.raidbots.com/icon/36/id/item/${candidate.itemId}.png`}
+                    alt=""
+                    aria-hidden
+                    width={36}
+                    height={36}
+                    unoptimized
+                    onError={(event) => {
+                      event.currentTarget.style.visibility = "hidden";
+                    }}
+                  />
+                  <span className={styles.itemDetails}>
+                    <strong>{candidate.name}</strong>
+                    <span>{candidate.slot} · Item {candidate.itemId}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
           </>
         )}
         {topGearCombinationCount > MAX_TOP_GEAR_COMBINATIONS && (
@@ -433,14 +454,9 @@ export function SimCurrentGear() {
             options.
           </p>
         )}
-        {errorMessage && (
-          <p className={styles.errorMessage} role="alert">
-            {errorMessage}
-          </p>
-        )}
-        <div className={styles.ctas}>
+        <div className={styles.actions}>
           <button
-            className={styles.secondary}
+            className={styles.runButton}
             type="button"
             onClick={runCurrentGear}
             disabled={
@@ -452,15 +468,68 @@ export function SimCurrentGear() {
               ? "Run Top Gear simulation"
               : "Simulate current gear"}
           </button>
-          <a
-            href="/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.docsLink}
-          >
-            Read our docs
-          </a>
+          <span className={styles.actionHint}>
+            {selectedCandidates.length > 0
+              ? `${topGearCombinationCount} gear combinations will be tested`
+              : "Run a simulation with your equipped gear"}
+          </span>
         </div>
+      </section>
+
+      <section className={styles.resultCard} aria-labelledby="result-heading">
+        <div className={styles.resultHeader}>
+          <div>
+            <p className={styles.eyebrow}>03 / Results</p>
+            <h2 id="result-heading">Simulation report</h2>
+          </div>
+          {isLoading && (
+            <span className={styles.runningBadge}>
+              <span className={styles.statusDot} />
+              In progress
+            </span>
+          )}
+        </div>
+        {(queueMessage || errorMessage || simulationUrl) && (
+          <div className={styles.resultMessages}>
+            {queueMessage && (
+              <p className={styles.queueMessage} role="status">
+                <span className={styles.loader} aria-hidden="true" />
+                {queueMessage}
+              </p>
+            )}
+            {errorMessage && (
+              <p className={styles.errorMessage} role="alert">
+                {errorMessage}
+              </p>
+            )}
+            {simulationUrl && (
+              <div className={styles.shareLink}>
+                <span>Share this simulation</span>
+                <a href={simulationUrl}>{simulationUrl}</a>
+              </div>
+            )}
+          </div>
+        )}
+        {simulationReport ? (
+          <iframe
+            className={styles.simulationReport}
+            title="SimulationCraft result"
+            srcDoc={simulationReport}
+          />
+        ) : (
+          !isLoading && !errorMessage && (
+            <div className={styles.emptyReport}>
+              <span className={styles.reportMark} aria-hidden="true">
+                ↗
+              </span>
+              <strong>Your results will appear here</strong>
+              <span>
+                Paste a profile and run a simulation to see your SimulationCraft
+                report.
+              </span>
+            </div>
+          )
+        )}
       </section>
     </div>
   );
