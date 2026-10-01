@@ -38,6 +38,10 @@ gateway:
     - sim-free.dev-null.rocks
   path: /
 
+redis:
+  persistence:
+    storageClassName: proxmox-data-xfs
+
 resources: {}
 
 livenessProbe:
