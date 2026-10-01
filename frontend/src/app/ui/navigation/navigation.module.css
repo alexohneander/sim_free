@@ -1,31 +1,95 @@
 .nav {
     position: fixed;
+    z-index: 10;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 80px;
-    background-color: #1e1e21;
+    border-bottom: 1px solid rgba(190, 205, 226, 0.1);
+    background: rgba(13, 17, 24, 0.9);
+    backdrop-filter: blur(16px);
 }
 
-.nav a {
-    margin: auto 20px;
+.navcontainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(100% - 48px, 1120px);
+    height: 100%;
+    margin: 0 auto;
 }
 
-.nav .navcontainer {
-    position: relative;
-    margin: auto;
-    padding: 30px 0;
-    width: 100%;
-    max-width: 1300px;
+.logocontainer,
+.navlinkcontainer,
+.logo {
+    display: flex;
+    align-items: center;
 }
 
-.nav .logocontainer {
-    margin: -20px auto;
-    float: left;
+.logo {
+    gap: 10px;
+    color: #f1f3f6;
 }
 
-.nav .logocontainer a {
-    margin: auto 0px;
+.logoImage {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
 }
 
-.nav .navlinkcontainer {
-    float: left;
+.brandName {
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+}
+
+.navlinkcontainer {
+    gap: 8px;
+}
+
+.navlinkcontainer a {
+    padding: 10px 15px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #b5bfcd;
+    font-size: 14px;
+    font-weight: 550;
+    transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.navlinkcontainer a:hover,
+.navlinkcontainer a:focus-visible {
+    border-color: rgba(190, 205, 226, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.navlinkcontainer a:focus-visible,
+.logo:focus-visible {
+    outline: 2px solid #e4c78f;
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .navcontainer {
+        width: calc(100% - 32px);
+    }
+
+    .logoImage {
+        width: 44px;
+        height: 44px;
+    }
+
+    .brandName {
+        font-size: 15px;
+    }
+
+    .navlinkcontainer {
+        gap: 2px;
+    }
+
+    .navlinkcontainer a {
+        padding: 9px 10px;
+        font-size: 13px;
+    }
 }

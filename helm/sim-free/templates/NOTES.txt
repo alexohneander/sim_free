@@ -1,4 +1,4 @@
-SimC-Free is deployed in namespace {{ .Release.Namespace }}.
+OpenSim is deployed in namespace {{ .Release.Namespace }}.
 
 {{- if .Values.ingress.enabled }}
 Ingress:

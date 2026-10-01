@@ -5,9 +5,9 @@ export default function Docs() {
   return (
     <div className={styles.page}>
       <main className={`${styles.main} ${styles.docsContent}`}>
-        <h1>How to use SimC-Free</h1>
+        <h1>How to use OpenSim</h1>
         <p>
-          SimC-Free runs SimulationCraft on your own server and displays its
+          OpenSim runs SimulationCraft on your own server and displays its
           interactive HTML report.
         </p>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "../page.module.css";
@@ -32,10 +33,16 @@ export function Footer() {
     <footer className={styles.footer}>
       <div className={styles.footerBrand}>
         <span className={styles.footerMark} aria-hidden="true">
-          S
+          <Image
+            className={styles.footerLogo}
+            src="/img/warcraft-icon-22.png"
+            alt=""
+            width={32}
+            height={32}
+          />
         </span>
         <div>
-          <strong>SimC-Free</strong>
+          <strong>OpenSim</strong>
           <p>Open-source WoW gear simulation, self-hosted.</p>
         </div>
       </div>

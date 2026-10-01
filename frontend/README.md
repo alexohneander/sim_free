@@ -1,4 +1,4 @@
-# SimC-Free frontend
+# OpenSim frontend
 
 This Next.js frontend lets players submit a SimulationCraft addon profile,
 select bag items, and view the HTML report produced by SimulationCraft. The

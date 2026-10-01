@@ -1,6 +1,6 @@
-# SimC-Free Helm chart
+# OpenSim Helm chart
 
-The chart deploys the SimC-Free web application, simulation workers, and a
+The chart deploys the OpenSim web application, simulation workers, and a
 persistent Redis instance. The web application and workers share Redis-backed
 jobs and reports; completed reports are retained for 24 hours. The chart can
 optionally expose the web service through Kubernetes Ingress, Gateway API

@@ -4,18 +4,19 @@ import styles from "./navigation.module.css";
 
 export function Navigation() {
   return (
-    <nav className={styles.nav}>
+    <nav className={styles.nav} aria-label="Main navigation">
       <div className={styles.navcontainer}>
         <div className={styles.logocontainer}>
           <Link className={styles.logo} href="/">
             <Image
-              className={styles.logo}
+              className={styles.logoImage}
               src="/img/warcraft-icon-22.png"
-              alt="Sim-Free Logo"
-              width={60}
-              height={60}
+              alt=""
+              width={44}
+              height={44}
               priority
             />
+            <span className={styles.brandName}>OpenSim</span>
           </Link>
         </div>
 

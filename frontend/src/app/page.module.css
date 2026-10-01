@@ -8,9 +8,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 56px;
+    gap: 40px;
     min-height: 100svh;
-    padding: 126px 32px 32px;
+    padding: 120px 32px 24px;
     background:
         radial-gradient(ellipse at 50% 0, rgba(75, 97, 130, 0.16), transparent 42rem),
         #0a0d12;
@@ -27,6 +27,22 @@
 
 .hero {
     max-width: 720px;
+}
+
+.heroBrand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.heroLogo {
+    width: 54px;
+    height: 54px;
+    padding: 5px;
+    border: 1px solid rgba(223, 182, 107, 0.22);
+    border-radius: 15px;
+    background: rgba(223, 182, 107, 0.06);
+    object-fit: contain;
 }
 
 .hero h1 {
@@ -496,10 +512,10 @@
 }
 
 .footer {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    gap: 18px 24px;
     width: 100%;
     max-width: 1120px;
     padding: 22px 24px;
@@ -508,12 +524,14 @@
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
     color: rgba(255, 255, 255, 0.72);
     font-size: 13px;
+    margin-top: auto;
 }
 
 .footerBrand {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
 }
 
 .footerMark {
@@ -527,6 +545,12 @@
     font-family: var(--font-geist-mono);
     font-size: 19px;
     font-weight: 700;
+}
+
+.footerLogo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
 }
 
 .footerBrand strong {
@@ -547,6 +571,8 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 4px;
+    min-width: 0;
+    text-align: right;
 }
 
 .simcVersion {
@@ -558,7 +584,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 22px;
+    gap: 12px 20px;
 }
 
 .footerLinks a {
@@ -570,6 +596,22 @@
 
 .footerLinks a:hover {
     color: #fff;
+}
+
+@media (max-width: 900px) {
+    .footer {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .footerLinks {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .footerCopyright {
+        grid-column: 2;
+        grid-row: 1;
+    }
 }
 
 @keyframes spin {
@@ -586,8 +628,8 @@
 
 @media (max-width: 700px) {
     .page {
-        gap: 36px;
-        padding: 104px 16px 20px;
+        gap: 30px;
+        padding: 104px 16px 18px;
     }
 
     .main {
@@ -596,6 +638,22 @@
 
     .hero > p:not(.eyebrow) {
         font-size: 15px;
+    }
+
+    .heroBrand {
+        gap: 11px;
+    }
+
+    .heroLogo {
+        width: 46px;
+        height: 46px;
+        padding: 4px;
+        border-radius: 12px;
+    }
+
+    .heroBrand .eyebrow {
+        font-size: 9px;
+        letter-spacing: 0.07em;
     }
 
     .profileCard,
@@ -651,10 +709,17 @@
     }
 
     .footer {
-        flex-direction: column;
-        align-items: center;
+        grid-template-columns: minmax(0, 1fr);
         gap: 18px;
         padding: 20px 16px;
+        text-align: center;
+    }
+
+    .footerBrand,
+    .footerCopyright {
+        grid-column: 1;
+        grid-row: auto;
+        justify-content: center;
         text-align: center;
     }
 
@@ -663,6 +728,8 @@
     }
 
     .footerLinks {
+        grid-column: 1;
+        grid-row: auto;
         gap: 16px;
     }
 }

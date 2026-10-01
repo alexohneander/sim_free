@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "../page.module.css";
 import { Footer } from "./footer";
 import { SimCurrentGear } from "./forms/simCurrentGear";
@@ -7,7 +8,17 @@ export function Intro() {
     <div className={styles.page}>
       <main className={styles.main}>
         <header className={styles.hero}>
-          <p className={styles.eyebrow}>World of Warcraft · Gear simulator</p>
+          <div className={styles.heroBrand}>
+            <Image
+              className={styles.heroLogo}
+              src="/img/warcraft-icon-22.png"
+              alt="OpenSim"
+              width={64}
+              height={64}
+              priority
+            />
+            <p className={styles.eyebrow}>World of Warcraft · Gear simulator</p>
+          </div>
           <h1>Find your next upgrade.</h1>
           <p>
             Run SimulationCraft on your own server and compare gear

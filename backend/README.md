@@ -1,8 +1,8 @@
-# SIM Free
+# OpenSim Backend
 
 ## Description
 
-Sim-Free runs SimulationCraft for a pasted SimC addon profile. Items listed
+OpenSim runs SimulationCraft for a pasted SimC addon profile. Items listed
 under `### Gear from Bags` are detected by the frontend. Selected items replace
 the currently equipped item in the same slot. When multiple items are selected
 for a slot, they are alternatives to the currently equipped item. The frontend
