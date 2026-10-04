@@ -231,6 +231,44 @@
     accent-color: var(--accent);
 }
 
+.raidbotsOption {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-top: 22px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(8, 11, 16, 0.4);
+    cursor: pointer;
+}
+
+.raidbotsOption input {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: var(--accent);
+}
+
+.raidbotsOption > span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.raidbotsOption strong {
+    color: #e5e9ef;
+    font-size: 13px;
+    font-weight: 550;
+}
+
+.raidbotsOption > span > span {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 .itemIcon {
     flex: 0 0 36px;
     width: 36px;

@@ -29,12 +29,16 @@ def get_queue_position(job: Job) -> int | None:
     return position + 1 if position is not None else None
 
 
-def enqueue_simulation(simcprofile: str) -> Job:
+def enqueue_simulation(
+    simcprofile: str,
+    raidbots_options: bool = False,
+) -> Job:
     from tasks import run_simulation
 
     return get_simulation_queue().enqueue(
         run_simulation,
         simcprofile,
+        raidbots_options,
         job_timeout=JOB_TIMEOUT_SECONDS,
         result_ttl=RESULT_TTL_SECONDS,
         failure_ttl=RESULT_TTL_SECONDS,

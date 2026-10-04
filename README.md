@@ -54,7 +54,10 @@ queue position while it is still waiting). Results are retained for 24 hours.
 Simulation options included in a pasted profile, such as the `# Simulation
 Options` section exported by Raidbots, are passed through to SimulationCraft.
 The defaults `iterations=1000`, `target_error=0.05`, and `threads=4` are only
-used when the profile does not set those options.
+used when the profile does not set those options. Enable **Use Raidbots
+simulation options** to apply the Raidbots-style preset (100,000 iterations,
+one target, raid buffs, detailed reporting, and the other listed Raidbots
+settings); these preset values take precedence over matching profile options.
 
 ## Development
 

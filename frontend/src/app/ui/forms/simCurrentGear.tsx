@@ -199,6 +199,7 @@ export function SimCurrentGear() {
   const [isLoading, setIsLoading] = useState(false);
   const [queueMessage, setQueueMessage] = useState("");
   const [simcProfile, setSimcProfile] = useState("");
+  const [raidbotsOptions, setRaidbotsOptions] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [errorMessage, setErrorMessage] = useState("");
   const [simulationUrl, setSimulationUrl] = useState("");
@@ -284,6 +285,7 @@ export function SimCurrentGear() {
         : simcProfile;
       const formData = new FormData();
       formData.set("simcprofile", profile);
+      formData.set("raidbots_options", String(raidbotsOptions));
       const response = await fetch("/sim/current_gear", {
         method: "POST",
         body: formData,
@@ -454,6 +456,24 @@ export function SimCurrentGear() {
             options.
           </p>
         )}
+        <label className={styles.raidbotsOption}>
+          <input
+            type="checkbox"
+            checked={raidbotsOptions}
+            onChange={(event) => {
+              setRaidbotsOptions(event.target.checked);
+              setSimulationReport("");
+            }}
+            disabled={isLoading}
+          />
+          <span>
+            <strong>Use Raidbots simulation options</strong>
+            <span>
+              Apply the Raidbots-style settings, including 100,000 iterations
+              and raid buffs.
+            </span>
+          </span>
+        </label>
         <div className={styles.actions}>
           <button
             className={styles.runButton}

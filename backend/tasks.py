@@ -7,14 +7,17 @@ from simcrunner.simc import HtmlExport
 from simc_options import get_default_simc_options
 
 
-def run_simulation(simcprofile: str) -> str:
+def run_simulation(simcprofile: str, raidbots_options: bool = False) -> str:
     with tempfile.TemporaryDirectory(prefix="sim-free-") as temp_directory:
         profile_path = Path(temp_directory) / "profile.simc"
         export_path = Path(temp_directory) / "report.html"
         profile_path.write_text(simcprofile, encoding="utf-8")
 
         profile = Profile(str(profile_path))
-        args = Arguments(profile, *get_default_simc_options(simcprofile))
+        args = Arguments(
+            profile,
+            *get_default_simc_options(simcprofile, raidbots_options),
+        )
         runner = Simc(
             simc_path="./",
             export_path=str(Path(temp_directory) / "simcrunner-export.simc"),

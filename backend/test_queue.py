@@ -9,6 +9,7 @@ from queue_backend import (
     get_queue_position,
     get_simulation_queue,
 )
+from simc_options import get_default_simc_options
 from tasks import run_simulation
 
 
@@ -52,6 +53,7 @@ class SimulationQueueTests(unittest.TestCase):
         get_queue.return_value.enqueue.assert_called_once_with(
             run_simulation,
             "mage=Example\n",
+            False,
             job_timeout=JOB_TIMEOUT_SECONDS,
             result_ttl=RESULT_TTL_SECONDS,
             failure_ttl=RESULT_TTL_SECONDS,
@@ -92,6 +94,40 @@ class SimulationQueueTests(unittest.TestCase):
             temp_directory,
         )
         arguments.assert_called_once()
+        self.assertEqual(
+            arguments.call_args.args[1:],
+            tuple(get_default_simc_options("mage=Example\n")),
+        )
+
+    @patch("tasks.Simc")
+    @patch("tasks.HtmlExport")
+    @patch("tasks.Profile")
+    @patch("tasks.Arguments")
+    def test_simulation_passes_raidbots_options_to_simc(
+        self,
+        arguments,
+        profile,
+        html_export,
+        simc,
+    ):
+        runner = simc.return_value
+        runner.add_args.return_value = runner
+        runner.last_query = {"returncode": 0}
+
+        def write_report():
+            Path(html_export.call_args.args[0]).write_text(
+                "<html>simulation report</html>",
+                encoding="utf-8",
+            )
+
+        runner.run.side_effect = write_report
+
+        run_simulation("mage=Example\n", raidbots_options=True)
+
+        self.assertEqual(
+            arguments.call_args.args[1:],
+            tuple(get_default_simc_options("mage=Example\n", True)),
+        )
 
     @patch("tasks.Simc")
     @patch("tasks.HtmlExport")

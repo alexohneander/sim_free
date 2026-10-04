@@ -99,9 +99,10 @@ async def custom_http_exception_handler(request, exc):
 def simulate_current_gear(
     response: Response,
     simcprofile: Annotated[str, Form()],
+    raidbots_options: Annotated[bool, Form()] = False,
 ):
     try:
-        job = enqueue_simulation(simcprofile)
+        job = enqueue_simulation(simcprofile, raidbots_options)
     except RedisError as exc:
         logging.exception("Unable to enqueue simulation")
         raise HTTPException(
