@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/alexohneander/sim-free
   pullPolicy: Always
-  tag: sha-81275a55040b066cbb46f5bdb07eabd604463e91
+  tag: sha-66ccc2afd557b00be945018e1019565a824d025c
 
 imagePullSecrets: []
 nameOverride: ""
