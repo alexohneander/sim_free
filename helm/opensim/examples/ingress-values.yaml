@@ -2,11 +2,11 @@ ingress:
   enabled: true
   className: nginx
   hosts:
-    - host: sim-free.example.com
+    - host: opensim.example.com
       paths:
         - path: /
           pathType: Prefix
   tls:
     - hosts:
-        - sim-free.example.com
-      secretName: sim-free-tls
+        - opensim.example.com
+      secretName: opensim-tls

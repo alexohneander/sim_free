@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sim-free.fullname" . }}
+  name: {{ include "opensim.fullname" . }}
   labels:
-    {{- include "sim-free.labels" . | nindent 4 }}
+    {{- include "opensim.labels" . | nindent 4 }}
   {{- with .Values.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,5 +16,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "sim-free.selectorLabels" . | nindent 4 }}
+    {{- include "opensim.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: web

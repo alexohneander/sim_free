@@ -9,19 +9,19 @@ optionally expose the web service through Kubernetes Ingress, Gateway API
 ## Install
 
 ```bash
-helm upgrade --install sim-free ./helm/sim-free \
-  --namespace sim-free --create-namespace
+helm upgrade --install opensim ./helm/opensim \
+  --namespace opensim --create-namespace
 ```
 
-The default image is `ghcr.io/alexohneander/sim-free:latest`, published by the
+The default image is `ghcr.io/alexohneander/opensim:latest`, published by the
 GitHub Actions workflow. Make the GHCR package public for unauthenticated
 cluster pulls, or configure `imagePullSecrets` for a private package. Override
 the image for a different registry or a pinned release:
 
 ```bash
-helm upgrade --install sim-free ./helm/sim-free \
-  --namespace sim-free --create-namespace \
-  --set image.repository=registry.example.com/sim-free \
+helm upgrade --install opensim ./helm/opensim \
+  --namespace opensim --create-namespace \
+  --set image.repository=registry.example.com/opensim \
   --set image.tag=1.0.0
 ```
 
@@ -31,8 +31,8 @@ to match your cluster. For an externally managed Redis, disable the bundled
 instance and provide its connection URL:
 
 ```bash
-helm upgrade --install sim-free ./helm/sim-free \
-  --namespace sim-free --create-namespace \
+helm upgrade --install opensim ./helm/opensim \
+  --namespace opensim --create-namespace \
   --set redis.enabled=false \
   --set-string redis.url=rediss://user:password@redis.example.com:6379/0
 ```
@@ -49,12 +49,12 @@ Install an Ingress controller first, then configure the hostname, class, and
 TLS secret in [examples/ingress-values.yaml](./examples/ingress-values.yaml):
 
 ```bash
-helm upgrade --install sim-free ./helm/sim-free \
-  --namespace sim-free --create-namespace \
-  --values ./helm/sim-free/examples/ingress-values.yaml
+helm upgrade --install opensim ./helm/opensim \
+  --namespace opensim --create-namespace \
+  --values ./helm/opensim/examples/ingress-values.yaml
 ```
 
-The example uses the `nginx` class and expects the `sim-free-tls` Secret to
+The example uses the `nginx` class and expects the `opensim-tls` Secret to
 exist in the release namespace. Adjust both to match your cluster.
 
 ## Gateway API
@@ -64,9 +64,9 @@ set `gateway.parentRefs` to an existing Gateway and listener and configure the
 hostname in [examples/gateway-values.yaml](./examples/gateway-values.yaml):
 
 ```bash
-helm upgrade --install sim-free ./helm/sim-free \
-  --namespace sim-free --create-namespace \
-  --values ./helm/sim-free/examples/gateway-values.yaml
+helm upgrade --install opensim ./helm/opensim \
+  --namespace opensim --create-namespace \
+  --values ./helm/opensim/examples/gateway-values.yaml
 ```
 
 The referenced Gateway listener must allow routes from the release namespace.
@@ -81,7 +81,7 @@ service remains internal (`ClusterIP`) in every mode.
 | --- | --- | --- |
 | `replicaCount` | `1` | Number of application pods |
 | `worker.replicaCount` | `2` | Number of simulation workers; each processes one job at a time |
-| `image.repository` | `ghcr.io/alexohneander/sim-free` | Container image |
+| `image.repository` | `ghcr.io/alexohneander/opensim` | Container image |
 | `image.tag` | `latest` | Container image tag |
 | `service.port` | `8000` | Application and service port |
 | `redis.enabled` | `true` | Deploy the chart-managed Redis instance |

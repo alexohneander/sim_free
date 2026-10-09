@@ -15,8 +15,8 @@ combinations per run, including the original gear.
 
 ### Installation
 ```bash
-git clone https://github.com/alexohneander/sim_free
-cd sim_free
+git clone https://github.com/alexohneander/OpenSim.git
+cd OpenSim
 
 python3 -m venv .venv
 source .venv/bin/activate

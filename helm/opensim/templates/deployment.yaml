@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sim-free.fullname" . }}
+  name: {{ include "opensim.fullname" . }}
   labels:
-    {{- include "sim-free.labels" . | nindent 4 }}
+    {{- include "opensim.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "sim-free.selectorLabels" . | nindent 6 }}
+      {{- include "opensim.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: web
   template:
     metadata:
@@ -17,7 +17,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "sim-free.labels" . | nindent 8 }}
+        {{- include "opensim.labels" . | nindent 8 }}
         app.kubernetes.io/component: web
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
@@ -27,7 +27,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "sim-free.serviceAccountName" . }}
+      serviceAccountName: {{ include "opensim.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -43,7 +43,7 @@ spec:
               protocol: TCP
           env:
             - name: REDIS_URL
-              value: {{ include "sim-free.redisUrl" . | quote }}
+              value: {{ include "opensim.redisUrl" . | quote }}
             - name: SIMULATION_QUEUE_NAME
               value: simulations
           livenessProbe:

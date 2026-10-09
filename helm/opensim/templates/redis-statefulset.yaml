@@ -2,22 +2,22 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "sim-free.fullname" . }}-redis
+  name: {{ include "opensim.fullname" . }}-redis
   labels:
-    {{- include "sim-free.labels" . | nindent 4 }}
+    {{- include "opensim.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
 spec:
-  serviceName: {{ include "sim-free.fullname" . }}-redis
+  serviceName: {{ include "opensim.fullname" . }}-redis
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "sim-free.name" . }}
+      app.kubernetes.io/name: {{ include "opensim.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/component: redis
   template:
     metadata:
       labels:
-        {{- include "sim-free.labels" . | nindent 8 }}
+        {{- include "opensim.labels" . | nindent 8 }}
         app.kubernetes.io/component: redis
     spec:
       containers:

@@ -56,8 +56,8 @@ export default function Docs() {
           web frontend, API, and SimulationCraft.
         </p>
         <pre>
-          <code>{`docker build -t sim-free .
-docker run --rm -p 8000:8000 sim-free`}</code>
+          <code>{`docker build -t opensim .
+docker run --rm -p 8000:8000 opensim`}</code>
         </pre>
       </main>
       <Footer />

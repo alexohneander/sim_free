@@ -1,14 +1,14 @@
 {{/*
 Expand the chart name.
 */}}
-{{- define "sim-free.name" -}}
+{{- define "opensim.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Create a default fully qualified app name.
 */}}
-{{- define "sim-free.fullname" -}}
+{{- define "opensim.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -24,16 +24,16 @@ Create a default fully qualified app name.
 {{/*
 Create chart label value.
 */}}
-{{- define "sim-free.chart" -}}
+{{- define "opensim.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels.
 */}}
-{{- define "sim-free.labels" -}}
-helm.sh/chart: {{ include "sim-free.chart" . }}
-{{ include "sim-free.selectorLabels" . }}
+{{- define "opensim.labels" -}}
+helm.sh/chart: {{ include "opensim.chart" . }}
+{{ include "opensim.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -43,17 +43,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels.
 */}}
-{{- define "sim-free.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "sim-free.name" . }}
+{{- define "opensim.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "opensim.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Service account name.
 */}}
-{{- define "sim-free.serviceAccountName" -}}
+{{- define "opensim.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "sim-free.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "opensim.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
@@ -62,11 +62,11 @@ Service account name.
 {{/*
 Resolve Redis to the chart-managed service or require an explicit external URL.
 */}}
-{{- define "sim-free.redisUrl" -}}
+{{- define "opensim.redisUrl" -}}
 {{- if .Values.redis.url -}}
 {{- .Values.redis.url -}}
 {{- else if .Values.redis.enabled -}}
-{{- printf "redis://%s-redis:6379/0" (include "sim-free.fullname" .) -}}
+{{- printf "redis://%s-redis:6379/0" (include "opensim.fullname" .) -}}
 {{- else -}}
 {{- fail "redis.url must be set when redis.enabled is false" -}}
 {{- end -}}

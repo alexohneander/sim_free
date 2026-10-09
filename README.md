@@ -8,8 +8,8 @@ SimulationCraft to run the simulations and displays the resulting HTML report.
 ## Run with Docker
 
 ```bash
-git clone https://github.com/alexohneander/sim_free.git
-cd sim_free
+git clone https://github.com/alexohneander/OpenSim.git
+cd OpenSim
 docker compose up --build --scale worker=2
 ```
 
@@ -25,14 +25,14 @@ relevant Ingress controller or Gateway API CRDs/controller in your cluster
 first.
 
 ```bash
-helm upgrade --install sim-free ./helm/sim-free \
-  --namespace sim-free --create-namespace \
-  --values ./helm/sim-free/examples/ingress-values.yaml
+helm upgrade --install opensim ./helm/opensim \
+  --namespace opensim --create-namespace \
+  --values ./helm/opensim/examples/ingress-values.yaml
 ```
 
 For Gateway API, use
-[the Gateway values example](./helm/sim-free/examples/gateway-values.yaml).
-See the [chart README](./helm/sim-free/README.md) for configuration details.
+[the Gateway values example](./helm/opensim/examples/gateway-values.yaml).
+See the [chart README](./helm/opensim/README.md) for configuration details.
 
 ## Simulate your character
 
@@ -67,9 +67,9 @@ the frontend waits for job completion and then displays the report. The
 Dockerfile builds the frontend and packages it with the SimC backend. At
 startup, the backend reads the bundled SimulationCraft version and exposes it
 in the site footer. GitHub Actions publishes images to
-`ghcr.io/alexohneander/sim-free` on pushes to `main`; pull requests only build
+`ghcr.io/alexohneander/opensim` on pushes to `main`; pull requests only build
 the image without publishing it. After a successful build on `main`, the
-workflow updates `helm/sim-free/values-dev.yaml` to the immutable full-SHA
+workflow updates `helm/opensim/values-dev.yaml` to the immutable full-SHA
 image tag so Argo CD can deploy it. Make the GHCR package public if your
 Kubernetes cluster should pull it without registry credentials. Run local
 development with `docker compose up --build --scale worker=2`; Redis persists

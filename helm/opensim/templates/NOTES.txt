@@ -15,5 +15,5 @@ that the selected Gateway listener allows routes from namespace
 {{- end }}
 
 For local access, run:
-  kubectl port-forward service/{{ include "sim-free.fullname" . }} 8000:{{ .Values.service.port }}
+  kubectl port-forward service/{{ include "opensim.fullname" . }} 8000:{{ .Values.service.port }}
 Then open http://localhost:8000.

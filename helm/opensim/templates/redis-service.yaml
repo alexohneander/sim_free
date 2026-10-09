@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sim-free.fullname" . }}-redis
+  name: {{ include "opensim.fullname" . }}-redis
   labels:
-    {{- include "sim-free.labels" . | nindent 4 }}
+    {{- include "opensim.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
 spec:
   clusterIP: None
@@ -14,7 +14,7 @@ spec:
       targetPort: redis
       protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ include "sim-free.name" . }}
+    app.kubernetes.io/name: {{ include "opensim.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: redis
 {{- end }}

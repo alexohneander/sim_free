@@ -49,7 +49,7 @@ export function Footer() {
       <nav className={styles.footerLinks} aria-label="Footer">
         <Link href="/docs">Documentation</Link>
         <a
-          href="https://github.com/alexohneander/sim_free"
+          href="https://github.com/alexohneander/OpenSim"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -57,7 +57,7 @@ export function Footer() {
           <span aria-hidden="true">↗</span>
         </a>
         <a
-          href="https://github.com/alexohneander/sim_free/issues/new"
+          href="https://github.com/alexohneander/OpenSim/issues/new"
           target="_blank"
           rel="noopener noreferrer"
         >

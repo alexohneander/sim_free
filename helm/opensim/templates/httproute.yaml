@@ -2,9 +2,9 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ include "sim-free.fullname" . }}
+  name: {{ include "opensim.fullname" . }}
   labels:
-    {{- include "sim-free.labels" . | nindent 4 }}
+    {{- include "opensim.labels" . | nindent 4 }}
   {{- with .Values.gateway.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -20,7 +20,7 @@ spec:
             type: PathPrefix
             value: {{ .Values.gateway.path | quote }}
       backendRefs:
-        - name: {{ include "sim-free.fullname" . }}
+        - name: {{ include "opensim.fullname" . }}
           port: {{ .Values.service.port }}
           weight: 1
 {{- end }}

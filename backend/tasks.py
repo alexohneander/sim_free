@@ -8,7 +8,7 @@ from simc_options import get_default_simc_options
 
 
 def run_simulation(simcprofile: str, raidbots_options: bool = False) -> str:
-    with tempfile.TemporaryDirectory(prefix="sim-free-") as temp_directory:
+    with tempfile.TemporaryDirectory(prefix="opensim-") as temp_directory:
         profile_path = Path(temp_directory) / "profile.simc"
         export_path = Path(temp_directory) / "report.html"
         profile_path.write_text(simcprofile, encoding="utf-8")

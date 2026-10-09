@@ -1,5 +1,5 @@
 apiVersion: v2
-name: sim-free
+name: opensim
 description: Self-hosted World of Warcraft gear simulator powered by SimulationCraft
 type: application
 version: 0.1.0

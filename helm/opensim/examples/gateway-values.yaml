@@ -5,5 +5,5 @@ gateway:
       namespace: gateway-system
       sectionName: https
   hostnames:
-    - sim-free.example.com
+    - opensim.example.com
   path: /

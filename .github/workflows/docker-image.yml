@@ -44,7 +44,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/sim-free
+          images: ghcr.io/${{ github.repository_owner }}/opensim
           tags: |
             type=ref,event=branch
             type=ref,event=tag
@@ -65,7 +65,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           image_tag="sha-${GITHUB_SHA}"
-          values_file="helm/sim-free/values-dev.yaml"
+          values_file="helm/opensim/values-dev.yaml"
           sed -i "s/^  tag: .*/  tag: ${image_tag}/" "$values_file"
           grep -q "^  tag: ${image_tag}$" "$values_file"
 

@@ -4,7 +4,7 @@ worker:
   resources: {}
 
 image:
-  repository: ghcr.io/alexohneander/sim-free
+  repository: ghcr.io/alexohneander/opensim
   pullPolicy: IfNotPresent
   tag: latest
 
@@ -44,7 +44,7 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: sim-free.example.com
+    - host: opensim.example.com
       paths:
         - path: /
           pathType: Prefix
@@ -57,7 +57,7 @@ gateway:
     - name: public-gateway
       sectionName: https
   hostnames:
-    - sim-free.example.com
+    - opensim.example.com
   path: /
 
 resources: {}
